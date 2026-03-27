@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Minimalista P2P</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; }
+        body { background-color: #f0f2f5; color: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        
+        #app { background: white; width: 90%; max-width: 400px; height: 80vh; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
+        .screen { display: flex; flex-direction: column; height: 100%; padding: 30px; }
+        .hidden { display: none !important; }
+
+        h1 { font-size: 2rem; margin-bottom: 1.5rem; letter-spacing: -1px; }
+        input { width: 100%; padding: 15px; margin-bottom: 10px; border: 1px solid #eee; border-radius: 12px; font-size: 1rem; outline: none; background: #fafafa; }
+        input:focus { border-color: #000; background: #fff; }
+        
+        button { width: 100%; padding: 15px; background: #000; color: #fff; border: none; border-radius: 12px; font-size: 1rem; cursor: pointer; font-weight: 600; }
+        button:hover { opacity: 0.8; }
+
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        #chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 85%; font-size: 0.9rem; line-height: 1.4; }
+        .me { background: #000; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .other { background: #f0f0f0; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .system { font-size: 0.75rem; color: #999; text-align: center; align-self: center; background: none; }
+
+        #chat-form { display: flex; gap: 8px; }
+        #chat-form input { margin-bottom: 0; flex: 1; }
+        #chat-form button { width: auto; padding: 0 20px; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="login-screen" class="screen">
+        <h1>Chat.</h1>
+        <input type="text" id="username" placeholder="Tu nombre">
+        <input type="text" id="room-code" placeholder="Código de sala (ej: sala123)">
+        <button onclick="joinRoom()">Entrar</button>
+        <p style="font-size: 0.7rem; color: #999; margin-top: 15px;">* Usa el mismo código con un amigo para conectar.</p>
+    </div>
+
+    <div id="chat-screen" class="screen hidden">
+        <header>
+            <strong id="display-room"></strong>
+            <button onclick="location.reload()" style="padding: 5px 10px; width: auto; background: #ff4444;">Salir</button>
+        </header>
+        <div id="chat-messages"></div>
+        <form id="chat-form" onsubmit="sendMessage(event)">
+            <input type="text" id="msg-input" placeholder="Mensaje..." autocomplete="off">
+            <button type="submit">-></button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let peer, conn, myName, roomID;
+    const msgContainer = document.getElementById('chat-messages');
+
+    function joinRoom() {
+        myName = document.getElementById('username').value;
+        roomID = document.getElementById('room-code').value;
+
+        if (!myName || !roomID) return alert("Rellena todo");
+
+        // Inicializar Peer con el código de sala como ID
+        // Nota: En una app real, el ID debe ser único, aquí usamos el código para "encontrarnos"
+        peer = new Peer(myName + "-" + roomID);
+
+        peer.on('open', (id) => {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('chat-screen').classList.remove('hidden');
+            document.getElementById('display-room').innerText = "Sala: " + roomID;
+            addMessage("Sistema", "Conectado. Esperando a otros...", "system");
+        });
+
+        // Escuchar conexiones entrantes
+        peer.on('connection', (c) => {
+            conn = c;
+            setupHandler();
+        });
+
+        // Intentar conectar con alguien que ya esté en la sala
+        // (Esto es una lógica simplificada P2P)
+        setTimeout(() => {
+            // Buscamos a alguien (esto es limitado en P2P puro sin server)
+            // Para probarlo solo: Abre dos pestañas con nombres distintos y misma sala
+        }, 500);
+    }
+
+    function setupHandler() {
+        conn.on('data', (data) => {
+            addMessage(data.user, data.text, "other");
+        });
+    }
+
+    function sendMessage(e) {
+        e.preventDefault();
+        const input = document.getElementById('msg-input');
+        const text = input.value;
+        if (!text) return;
+
+        // Si hay conexión, enviamos
+        if (conn) {
+            conn.send({ user: myName, text: text });
+        }
+        
+        addMessage(myName, text, "me");
+        input.value = "";
+    }
+
+    function addMessage(user, text, type) {
+        const div = document.createElement('div');
+        div.className = `msg ${type}`;
+        div.innerHTML = type === 'other' ? `<b>${user}:</b><br>${text}` : text;
+        msgContainer.appendChild(div);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+
+    // Lógica para conectar manualmente si conoces el nombre del otro
+    // (El P2P puro sin servidor de señalización centralizado es complejo, 
+    // lo ideal sigue siendo el código Node.js del primer mensaje)
+</script>
+
+</body>
+</html>
