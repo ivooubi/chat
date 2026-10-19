@@ -246,6 +246,54 @@ body{transition:background .4s,color .4s}
 .sw:hover{transform:scale(1.1)}
 .sw:active{transform:scale(.9)}
 .sw:focus-visible{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--text)}
+
+/* Archivos adjuntos */
+#conv{position:relative}
+#conv.drag::after{content:"Suelta aquí para adjuntar";position:absolute;inset:10px;border:2px dashed var(--accent);border-radius:22px;background:rgba(var(--accent-rgb),.12);display:grid;place-items:center;font-weight:600;color:var(--accent2);z-index:5;pointer-events:none}
+#composer .attach{flex:none;width:44px;height:44px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);color:var(--muted);display:grid;place-items:center;transition:color .2s,transform .2s var(--ease),border-color .2s}
+#composer .attach:hover{color:var(--accent2);border-color:var(--accent)}
+#composer .attach:active{transform:scale(.9)}
+#composer.busy .send,#composer.busy .attach{opacity:.5;pointer-events:none}
+.send-error{padding:8px 18px;color:var(--red);font-size:13px;background:var(--glass);border-top:1px solid var(--line)}
+#tray{display:flex;gap:10px;padding:12px 18px 2px;overflow-x:auto;background:var(--glass);border-top:1px solid var(--line)}
+#tray+#composer{border-top:0}
+.chipf{position:relative;flex:none;width:64px;height:64px;border-radius:14px;overflow:hidden;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center}
+.chipf img{width:100%;height:100%;object-fit:cover;transition:opacity .3s}
+.chipf.busy img,.chipf.busy .fi{opacity:.4}
+.chipf .x{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.62);color:#fff;font-size:14px;line-height:1;display:grid;place-items:center}
+.spin{position:absolute;width:24px;height:24px;border-radius:50%;border:2.5px solid rgba(var(--accent-rgb),.25);border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fi{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;font-size:11px;font-weight:700;letter-spacing:.02em;background:rgba(var(--accent-rgb),.16);color:var(--accent2);flex:none}
+.bubble.out .fi{background:rgba(255,255,255,.22);color:#fff}
+.bubble.media{padding:5px}
+.bubble.media small{padding:3px 8px 2px}
+.cap{padding:6px 10px 2px;font-size:15px;line-height:1.35;white-space:pre-wrap}
+.att{display:block;position:relative}
+.att-img,.att-vid{width:260px;max-width:100%;max-height:340px;border-radius:16px;overflow:hidden;background:var(--panel2)}
+.att-img{cursor:zoom-in}
+.att-img img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s var(--ease)}
+.att-img.ready img{opacity:1}
+.att-vid{aspect-ratio:16/9}
+.att-vid video{display:block;width:100%;height:100%;background:#000;object-fit:contain}
+.att-img:not(.ready),.att-vid:not(.ready){animation:skel 1.4s ease-in-out infinite}
+@keyframes skel{50%{opacity:.55}}
+.att-aud{min-width:250px;padding:2px}
+.att-aud audio{display:block;width:250px;max-width:100%;height:42px}
+.att-file{display:flex;align-items:center;gap:12px;padding:6px 10px 6px 6px;min-width:220px;max-width:300px;color:inherit;text-decoration:none;border-radius:14px}
+.att-file .ft{min-width:0;display:flex;flex-direction:column;flex:1}
+.att-file .ft b{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.att-file .fs{font-size:12px;opacity:.7}
+.att-file>svg{flex:none;opacity:.75}
+.att-err{padding:10px 12px;font-size:13px;opacity:.8}
+
+/* Visor de imágenes */
+.lb{z-index:90}
+.lb.open{background:rgba(0,0,0,.86)}
+.lb img{max-width:92vw;max-height:84vh;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.6);transform:scale(.94);transition:transform .5s var(--ease)}
+.lb.open img{transform:none}
+.lb-bar{position:fixed;top:calc(14px + env(safe-area-inset-top));right:14px;display:flex;gap:8px}
+.lb .icon-btn{background:rgba(255,255,255,.14);color:#fff;width:40px;height:40px;border-radius:50%}
+.lb .icon-btn:hover{background:rgba(255,255,255,.26)}
 </style>
 </head>
 <body>
@@ -348,7 +396,13 @@ body{transition:background .4s,color .4s}
             </div>
           </header>
           <div id="messages"></div>
+          <div class="send-error" id="send-error" hidden></div>
+          <div id="tray" hidden></div>
           <form id="composer" autocomplete="off">
+            <button class="attach" type="button" id="btn-attach" title="Adjuntar archivo">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <input type="file" id="file-input" multiple hidden>
             <input id="msg-input" placeholder="Escribe un mensaje…" spellcheck="false">
             <button class="send" type="submit" title="Enviar">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
@@ -358,6 +412,14 @@ body{transition:background .4s,color .4s}
       </main>
     </div>
   </section>
+</div>
+
+<div id="lightbox" class="overlay lb" aria-hidden="true">
+  <div class="lb-bar">
+    <a class="icon-btn" id="lb-dl" title="Descargar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg></a>
+    <button class="icon-btn" id="lb-close" type="button" title="Cerrar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+  <img id="lb-img" alt="">
 </div>
 
 <div id="admin" class="overlay" aria-hidden="true">
@@ -594,7 +656,7 @@ $('#btn-logout').addEventListener('click', async () => {
   try { await pushRemove(); } catch (_) {}
   await sb.auth.signOut();
   me = null; active = null; peers = {}; avatars = {}; cache = {}; unread.clear(); lastSeen = {}; peerShow = {};
-  closeSettings(); closeAdmin(); hideBan();
+  closeSettings(); closeAdmin(); hideBan(); clearStaged();
   $('#shell').hidden = true;
   $('#shell').classList.remove('chat-open');
   $('#conv').hidden = true;
@@ -731,7 +793,7 @@ function renderContacts() {
   ul.innerHTML = list.map(([id, n]) => {
     const last = (cache[id] || []).slice(-1)[0];
     return `<li data-id="${id}" class="${id === active ? 'active' : ''}">
-      <div class="av">${avatar(n, avatars[id])}<i class="status" data-uid="${id}"></i></div><div class="info"><b>${nameHTML(n)}</b><span>${last ? esc(last.text) : 'Di hola 👋'}</span></div>
+      <div class="av">${avatar(n, avatars[id])}<i class="status" data-uid="${id}"></i></div><div class="info"><b>${nameHTML(n)}</b><span>${last ? esc(previewText(last)) : 'Di hola 👋'}</span></div>
       ${unread.has(id) ? '<i class="badge"></i>' : ''}</li>`;
   }).join('');
   refreshStatus();
@@ -772,6 +834,7 @@ $('#add-form').addEventListener('submit', async (e) => {
 });
 
 function openChat(id) {
+  if (active !== id) clearStaged();
   active = id;
   unread.delete(id);
   $('#empty').hidden = true;
@@ -790,6 +853,7 @@ function openChat(id) {
 $('#btn-back').addEventListener('click', () => {
   $('#shell').classList.remove('chat-open');
   active = null;
+  clearStaged();
   renderContacts();
 });
 
@@ -803,7 +867,10 @@ function bubbleHTML(m) {
   const out = m.sender_id === me.id;
   let ticks = '';
   if (out && me.show_read) ticks = m.read_at ? TICKS.replace('class="ticks"', 'class="ticks read"').replace('title="Enviado"', `title="Visto ${t}"`) : TICKS;
-  return `<div class="bubble ${out ? 'out' : 'in'}" data-id="${m.id}">${esc(m.text)}<small>${t}${ticks}</small></div>`;
+  const body = m.file_path
+    ? attHTML(m) + (m.text && m.text !== m.file_name ? `<div class="cap">${esc(m.text)}</div>` : '')
+    : esc(m.text);
+  return `<div class="bubble ${out ? 'out' : 'in'}${m.file_path ? ' media' : ''}" data-id="${m.id}">${body}<small>${t}${ticks}</small></div>`;
 }
 
 /* Marca como vistos los mensajes recibidos del chat abierto */
@@ -825,23 +892,249 @@ function renderMessages() {
   $('#messages').innerHTML = (list.length ? '<div class="day">Conversación</div>' : '') + list.map(bubbleHTML).join('');
   const box = $('#messages');
   box.scrollTop = box.scrollHeight;
+  hydrate(box);
 }
 function appendMessage(m) {
   if ((cache[active] || []).length === 1) $('#messages').innerHTML = '<div class="day">Conversación</div>';
   $('#messages').insertAdjacentHTML('beforeend', bubbleHTML(m));
+  hydrate($('#messages'));
   scrollDown();
+}
+
+/* ---------- Archivos adjuntos ---------- */
+const BUCKET = 'chat-files';
+const MAX_FILE = 20 * 1024 * 1024, MAX_FILES = 6;
+const IMG_OK = /^image\/(jpeg|png|webp|gif|avif|svg\+xml)$/i;
+const VID_OK = /^video\/(mp4|webm|quicktime|ogg)$/i;
+let staged = [], sending = false, stageId = 0;
+const urlCache = new Map();
+
+const fmtSize = (n) => (n < 1024 ? n + ' B' : n < 1048576 ? Math.round(n / 1024) + ' KB' : (n / 1048576).toFixed(1) + ' MB');
+const extOf = (name) => {
+  const n = String(name);
+  return n.includes('.') ? n.split('.').pop().slice(0, 4).toUpperCase() || 'FILE' : 'FILE';
+};
+function previewText(m) {
+  if (!m.file_path) return m.text;
+  const t = m.file_type || '';
+  const label = IMG_OK.test(t) ? '📷 Foto' : VID_OK.test(t) ? '🎬 Vídeo' : /^audio\//i.test(t) ? '🎵 Audio' : '📎 ' + (m.file_name || 'Archivo');
+  return m.text && m.text !== m.file_name ? label.split(' ')[0] + ' ' + m.text : label;
+}
+
+async function signedUrl(path, dl) {
+  const key = path + '|' + (dl || '');
+  const c = urlCache.get(key);
+  if (c && c.exp > Date.now()) return c.url;
+  const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(path, 3600, dl ? { download: dl } : undefined);
+  if (error) throw error;
+  urlCache.set(key, { url: data.signedUrl, exp: Date.now() + 50 * 60000 });
+  return data.signedUrl;
+}
+
+const DL_ICO = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>';
+const attrs = (m) => `data-path="${esc(m.file_path)}" data-name="${esc(m.file_name || 'archivo')}" data-size="${Number(m.file_size) || 0}"`;
+function fileCardHTML(m) {
+  const name = m.file_name || 'archivo';
+  return `<a class="att att-file" data-kind="file" ${attrs(m)} target="_blank" rel="noopener"><span class="fi">${esc(extOf(name))}</span><span class="ft"><b>${esc(name)}</b><span class="fs">${fmtSize(Number(m.file_size) || 0)}</span></span>${DL_ICO}</a>`;
+}
+function attHTML(m) {
+  const t = m.file_type || '';
+  if (IMG_OK.test(t)) {
+    const w = Number(m.file_w), h = Number(m.file_h);
+    const ar = w > 0 && h > 0 ? `${w}/${h}` : '4/3';
+    return `<div class="att att-img" data-kind="img" ${attrs(m)} style="aspect-ratio:${ar}"></div>`;
+  }
+  if (VID_OK.test(t)) return `<div class="att att-vid" data-kind="video" ${attrs(m)}></div>`;
+  if (/^audio\//i.test(t)) return `<div class="att att-aud" data-kind="audio" ${attrs(m)}></div>`;
+  return fileCardHTML(m);
+}
+
+// Pide las direcciones temporales de los archivos y los pinta (imagen, vídeo, audio o tarjeta)
+async function hydrate(root) {
+  const nodes = [...root.querySelectorAll('.att[data-path]:not([data-done])')];
+  await Promise.all(nodes.map(async (n) => {
+    n.dataset.done = '1';
+    const { kind, name } = n.dataset;
+    try {
+      const url = await signedUrl(n.dataset.path, kind === 'file' ? name : null);
+      if (kind === 'file') { n.href = url; n.setAttribute('download', name); return; }
+      if (kind === 'img') {
+        const im = new Image();
+        im.alt = name; im.decoding = 'async';
+        im.onload = () => n.classList.add('ready');
+        im.onerror = () => asCard(n);
+        im.src = url;
+        n.appendChild(im);
+        n.addEventListener('click', () => openLightbox(url, name, n.dataset.path));
+      } else {
+        const el = document.createElement(kind === 'video' ? 'video' : 'audio');
+        el.controls = true; el.preload = 'metadata'; el.src = url;
+        if (kind === 'video') el.playsInline = true;
+        el.onerror = () => asCard(n);
+        n.classList.add('ready');
+        n.appendChild(el);
+      }
+    } catch (_) { n.classList.add('att-err'); n.textContent = 'No se pudo cargar el archivo'; }
+  }));
+}
+function asCard(n) { // si el navegador no puede mostrarlo, se ofrece como descarga
+  const tmp = document.createElement('div');
+  tmp.innerHTML = fileCardHTML({ file_path: n.dataset.path, file_name: n.dataset.name, file_size: n.dataset.size });
+  const card = tmp.firstElementChild;
+  const parent = n.parentNode;
+  n.replaceWith(card);
+  hydrate(parent);
+}
+
+/* Visor de imágenes */
+const lb = $('#lightbox');
+function openLightbox(url, name, path) {
+  $('#lb-img').src = url; $('#lb-img').alt = name;
+  const a = $('#lb-dl');
+  a.removeAttribute('href');
+  signedUrl(path, name).then((u) => { a.href = u; a.setAttribute('download', name); }).catch(() => {});
+  lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false');
+}
+function closeLightbox() { lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); }
+lb.addEventListener('click', (e) => { if (e.target === lb || e.target.closest('#lb-close')) closeLightbox(); });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+
+/* Archivos preparados para enviar */
+function showSendError(msg) {
+  const el = $('#send-error');
+  el.textContent = msg; el.hidden = !msg;
+  clearTimeout(showSendError.t);
+  if (msg) showSendError.t = setTimeout(() => { el.hidden = true; }, 6000);
+}
+function stageFiles(files) {
+  showSendError('');
+  for (const f of files) {
+    if (staged.length >= MAX_FILES) { showSendError('Máximo ' + MAX_FILES + ' archivos a la vez.'); break; }
+    if (!f.size) continue;
+    if (f.size > MAX_FILE) { showSendError(`“${f.name}” pesa más de 20 MB.`); continue; }
+    staged.push({ id: ++stageId, file: f, thumb: IMG_OK.test(f.type) ? URL.createObjectURL(f) : null, busy: false });
+  }
+  renderTray();
+}
+function dropStaged(id) {
+  const i = staged.findIndex((s) => s.id === id);
+  if (i < 0) return;
+  if (staged[i].thumb) URL.revokeObjectURL(staged[i].thumb);
+  staged.splice(i, 1);
+  renderTray();
+}
+function clearStaged() {
+  staged.forEach((s) => { if (s.thumb) URL.revokeObjectURL(s.thumb); });
+  staged = [];
+  renderTray();
+}
+function renderTray() {
+  const t = $('#tray');
+  t.hidden = !staged.length;
+  t.innerHTML = staged.map((s) => `<div class="chipf${s.busy ? ' busy' : ''}" data-id="${s.id}" title="${esc(s.file.name)}">${s.thumb ? `<img src="${s.thumb}" alt="">` : `<span class="fi">${esc(extOf(s.file.name))}</span>`}${s.busy ? '<i class="spin"></i>' : '<button type="button" class="x" aria-label="Quitar">×</button>'}</div>`).join('');
+}
+$('#tray').addEventListener('click', (e) => {
+  const x = e.target.closest('.x');
+  if (x && !sending) dropStaged(+x.closest('.chipf').dataset.id);
+});
+$('#btn-attach').addEventListener('click', () => { if (!sending) $('#file-input').click(); });
+$('#file-input').addEventListener('change', (e) => { stageFiles([...e.target.files]); e.target.value = ''; });
+$('#msg-input').addEventListener('paste', (e) => {
+  const fs = [...((e.clipboardData && e.clipboardData.files) || [])];
+  if (fs.length) { e.preventDefault(); stageFiles(fs); }
+});
+const convEl = $('#conv');
+['dragenter', 'dragover'].forEach((ev) => convEl.addEventListener(ev, (e) => {
+  if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) { e.preventDefault(); convEl.classList.add('drag'); }
+}));
+convEl.addEventListener('dragleave', (e) => { if (!convEl.contains(e.relatedTarget)) convEl.classList.remove('drag'); });
+convEl.addEventListener('drop', (e) => {
+  convEl.classList.remove('drag');
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); stageFiles([...e.dataTransfer.files]); }
+});
+
+// Las fotos grandes se reducen (máx. 1600 px) antes de subirlas para ahorrar espacio y datos
+async function prepare(file) {
+  let blob = file, name = file.name || 'archivo', type = file.type || 'application/octet-stream', w = null, h = null;
+  if (/^image\//i.test(type) && !/svg/i.test(type)) {
+    try {
+      const bmp = await createImageBitmap(file);
+      w = bmp.width; h = bmp.height;
+      if (/^image\/(jpeg|png|webp)$/i.test(type)) {
+        const k = Math.min(1, 1600 / Math.max(w, h));
+        if (k < 1 || file.size > 1.5e6) {
+          const cw = Math.max(1, Math.round(w * k)), ch = Math.max(1, Math.round(h * k));
+          const c = document.createElement('canvas');
+          c.width = cw; c.height = ch;
+          c.getContext('2d').drawImage(bmp, 0, 0, cw, ch);
+          const out = await new Promise((r) => c.toBlob(r, /jpeg/i.test(type) ? 'image/jpeg' : 'image/webp', 0.86));
+          if (out && out.size < file.size) {
+            blob = out; w = cw; h = ch;
+            if (out.type !== type) {
+              type = out.type;
+              name = name.replace(/\.[^.]+$/, '') + (type === 'image/webp' ? '.webp' : type === 'image/png' ? '.png' : '.jpg');
+            }
+          }
+        }
+      }
+      if (bmp.close) bmp.close();
+    } catch (_) {}
+  }
+  return { blob, name, type, w, h };
+}
+async function uploadFile(file) {
+  const p = await prepare(file);
+  const safe = p.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(-80) || 'archivo';
+  const path = `${me.id}/${Date.now()}_${Math.random().toString(36).slice(2, 10)}_${safe}`;
+  const { error } = await sb.storage.from(BUCKET).upload(path, p.blob, { contentType: p.type || 'application/octet-stream', cacheControl: '3600', upsert: false });
+  if (error) throw new Error(/bucket|not found|row-level|policy/i.test(error.message) ? 'No se pudo subir. Falta ejecutar el SQL de archivos en Supabase.' : error.message);
+  return { path, name: p.name.slice(0, 120), type: p.type, size: p.blob.size, w: p.w, h: p.h };
+}
+async function sendMsg(to, fields) {
+  const { data, error } = await sb.from('messages').insert({ receiver_id: to, ...fields }).select().single();
+  if (error) throw new Error(/file_|column|schema cache|check/i.test(error.message) ? 'No se pudo enviar. Falta ejecutar el SQL de archivos en Supabase.' : error.message);
+  const pid = addToCache(data);
+  if (pid && pid === active) appendMessage(data);
+  renderContacts();
 }
 
 $('#composer').addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (sending) return;
   const input = $('#msg-input');
   const text = input.value.trim();
-  if (!text || !active) return;
+  const to = active;
+  if (!to || (!text && !staged.length)) return;
+  const files = staged.slice();
   input.value = '';
-  const { data, error } = await sb.from('messages').insert({ receiver_id: active, text }).select().single();
-  if (error) { input.value = text; return; }
-  if (addToCache(data)) appendMessage(data);
-  renderContacts();
+  sending = true;
+  showSendError('');
+  $('#composer').classList.add('busy');
+  let textSent = false;
+  try {
+    if (!files.length) {
+      await sendMsg(to, { text });
+      textSent = true;
+    } else {
+      for (let i = 0; i < files.length; i++) {
+        const s = files[i];
+        s.busy = true; renderTray();
+        const up = await uploadFile(s.file);
+        // el texto escrito acompaña al primer archivo; sin texto, el mensaje lleva el nombre del archivo
+        await sendMsg(to, { text: (i === 0 && text) || up.name, file_path: up.path, file_name: up.name, file_type: up.type, file_size: up.size, file_w: up.w, file_h: up.h });
+        if (i === 0) textSent = true;
+        dropStaged(s.id);
+      }
+    }
+  } catch (ex) {
+    if (!textSent) input.value = text;
+    showSendError(ex.message || 'No se pudo enviar.');
+    staged.forEach((s) => { s.busy = false; });
+    renderTray();
+  } finally {
+    sending = false;
+    $('#composer').classList.remove('busy');
+  }
 });
 
 /* ---------- 5. Ajustes ---------- */
