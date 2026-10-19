@@ -161,6 +161,7 @@ body{transition:background .4s,color .4s}
 .seg[data-v=dark] .seg-pill{transform:translateX(100%)}
 .btn.soft{background:var(--panel2);border:1px solid var(--line);color:var(--text)}
 .field:disabled{opacity:.5}
+.vbadge{display:inline-flex;vertical-align:-3px;margin-left:5px;flex:none}
 </style>
 </head>
 <body>
@@ -297,6 +298,7 @@ body{transition:background .4s,color .4s}
         <button class="btn primary sm" type="submit">Guardar</button>
       </form>
       <p class="error" id="name-error"></p>
+      <p class="muted" id="name-note" hidden>Esta es la cuenta de soporte, por eso su nombre no se puede cambiar.</p>
 
       <label class="set-label">Apariencia</label>
       <div class="seg" id="theme-seg" data-v="dark">
@@ -333,7 +335,10 @@ let unread = new Set();
 let channel = null;
 let mode = 'register';
 let avatars = {};       // id -> foto (data URL)
-const SUPPORT_USER = 'ivooubi';
+const SUPPORT_USER = 'admin.';
+const VERIFIED = [SUPPORT_USER];
+const BADGE = '<span class="vbadge" title="Cuenta verificada"><svg viewBox="0 0 24 24" width="16" height="16"><g fill="#20a4f3"><rect x="3" y="3" width="18" height="18" rx="5"/><rect x="3" y="3" width="18" height="18" rx="5" transform="rotate(45 12 12)"/></g><path d="M8 12.4l2.8 2.8 5.4-5.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+const nameHTML = (n) => esc(n) + (VERIFIED.includes(n) ? BADGE : '');
 
 /* ---------- 1. Intro: click / scroll / deslizar ---------- */
 const stage = $('#stage');
@@ -392,7 +397,7 @@ $('#step-username').addEventListener('submit', async (e) => {
   const pass = $('#input-pass').value;
   const err = $('#username-error');
   err.textContent = '';
-  if (!validName(name)) { err.textContent = 'Usa 3-16 caracteres: letras, números o _'; return; }
+  if (!(mode === 'login' ? /^[a-z0-9_.]{3,16}$/.test(name) : validName(name))) { err.textContent = 'Usa 3-16 caracteres: letras, números o _'; return; }
   if (pass.length < 6) { err.textContent = 'La contraseña debe tener al menos 6 caracteres.'; return; }
 
   const btn = $('#auth-submit');
@@ -483,7 +488,7 @@ function subscribe() {
       if (!peers[p.id]) return;
       peers[p.id] = p.username; avatars[p.id] = p.avatar || null;
       if (p.id === active) {
-        $('#peer-name').textContent = p.username;
+        $('#peer-name').innerHTML = nameHTML(p.username);
         $('#peer-avatar').outerHTML = avatar(p.username, p.avatar, 'peer-avatar');
       }
       renderContacts();
@@ -533,7 +538,7 @@ function renderContacts() {
   ul.innerHTML = list.map(([id, n]) => {
     const last = (cache[id] || []).slice(-1)[0];
     return `<li data-id="${id}" class="${id === active ? 'active' : ''}">
-      ${avatar(n, avatars[id])}<div class="info"><b>${esc(n)}${n === SUPPORT_USER ? ' <em class="tag-s">Soporte</em>' : ''}</b><span>${last ? esc(last.text) : 'Di hola 👋'}</span></div>
+      ${avatar(n, avatars[id])}<div class="info"><b>${nameHTML(n)}</b><span>${last ? esc(last.text) : 'Di hola 👋'}</span></div>
       ${unread.has(id) ? '<i class="badge"></i>' : ''}</li>`;
   }).join('');
 }
@@ -576,7 +581,7 @@ function openChat(id) {
   unread.delete(id);
   $('#empty').hidden = true;
   $('#conv').hidden = false;
-  $('#peer-name').textContent = peers[id];
+  $('#peer-name').innerHTML = nameHTML(peers[id]);
   $('#peer-avatar').outerHTML = avatar(peers[id], avatars[id], 'peer-avatar');
   $('#shell').classList.add('chat-open');
   renderMessages();
@@ -639,12 +644,13 @@ function syncSettings() {
   if (!me) return;
   paint($('#me-avatar'), me.username, me.avatar);
   paint($('#set-avatar'), me.username, me.avatar);
-  $('#me-name').textContent = me.username;
-  $('#set-name-label').textContent = me.username;
+  $('#me-name').innerHTML = nameHTML(me.username);
+  $('#set-name-label').innerHTML = nameHTML(me.username);
   $('#name-input').value = me.username;
   const locked = me.username === SUPPORT_USER; // la cuenta de soporte no puede cambiar de nombre
   $('#name-input').disabled = locked;
   $('#name-form button').disabled = locked;
+  $('#name-note').hidden = !locked;
   $('#avatar-remove').hidden = !hasPhoto(me.avatar);
 }
 $('#btn-settings').addEventListener('click', openSettings);
