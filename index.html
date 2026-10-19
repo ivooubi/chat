@@ -1,4 +1,4 @@
-
+  
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -162,6 +162,26 @@ body{transition:background .4s,color .4s}
 .btn.soft{background:var(--panel2);border:1px solid var(--line);color:var(--text)}
 .field:disabled{opacity:.5}
 .vbadge{display:inline-flex;vertical-align:-3px;margin-left:5px;flex:none}
+.sheet.wide{max-width:560px}
+.adm-search{margin:12px 0 0}
+#adm-list{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:12px}
+#adm-list li{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.adm-row{display:flex;align-items:center;gap:10px}
+.adm-row .avatar{width:36px;height:36px;font-size:14px}
+.adm-info{flex:1;min-width:0;display:flex;flex-direction:column}
+.adm-info b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-info small{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip-s{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.chip-s.ok{background:rgba(48,209,88,.15);color:var(--green)}
+.chip-s.bad{background:rgba(255,69,58,.15);color:var(--red)}
+.btn-mini{padding:7px 12px;border-radius:10px;font-size:13px;font-weight:600;background:var(--panel);border:1px solid var(--line);white-space:nowrap;transition:transform .2s var(--ease)}
+.btn-mini:active{transform:scale(.94)}
+.btn-mini.danger{color:var(--red)}
+.adm-ban{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;animation:pop .3s var(--ease)}
+.adm-ban .field{width:auto;flex:1 1 140px;padding:9px 12px;font-size:14px}
+.ban-body{text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;padding:32px 26px!important}
+.ban-ico{background:linear-gradient(135deg,#ff453a,#ff7a59);box-shadow:0 8px 30px rgba(255,69,58,.4)}
+@media(max-width:520px){.adm-row{flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -208,6 +228,9 @@ body{transition:background .4s,color .4s}
             <strong id="me-name">usuario</strong>
             <small><i class="dot"></i> en línea</small>
           </div>
+          <button class="icon-btn" id="btn-admin" title="Panel de administración" hidden>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </button>
           <button class="icon-btn" id="btn-settings" title="Ajustes">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
           </button>
@@ -270,6 +293,36 @@ body{transition:background .4s,color .4s}
       </main>
     </div>
   </section>
+</div>
+
+<div id="admin" class="overlay" aria-hidden="true">
+  <div class="sheet wide" role="dialog" aria-label="Administración">
+    <div class="sheet-head">
+      <h3>Administración</h3>
+      <button class="icon-btn" id="admin-close" title="Cerrar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <p class="muted" id="adm-summary"></p>
+      <div class="search adm-search">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="adm-search" placeholder="Buscar cuenta" spellcheck="false" autocomplete="off">
+      </div>
+      <p class="error" id="adm-error"></p>
+      <ul id="adm-list"></ul>
+    </div>
+  </div>
+</div>
+
+<div id="banned" class="overlay" aria-hidden="true">
+  <div class="sheet">
+    <div class="sheet-body ban-body">
+      <div class="logo-badge ban-ico">!</div>
+      <h3>Cuenta suspendida</h3>
+      <p class="muted" id="ban-msg"></p>
+      <p class="muted" id="ban-reason"></p>
+      <button class="btn primary" id="ban-logout" type="button">Cerrar sesión</button>
+    </div>
+  </div>
 </div>
 
 <div id="settings" class="overlay" aria-hidden="true">
@@ -430,7 +483,7 @@ $('#btn-logout').addEventListener('click', async () => {
   if (channel) { sb.removeChannel(channel); channel = null; }
   await sb.auth.signOut();
   me = null; active = null; peers = {}; avatars = {}; cache = {}; unread.clear();
-  closeSettings();
+  closeSettings(); closeAdmin(); hideBan();
   $('#shell').hidden = true;
   $('#shell').classList.remove('chat-open');
   $('#conv').hidden = true;
@@ -484,6 +537,9 @@ function subscribe() {
       else if (m.sender_id !== me.id) unread.add(pid);
       renderContacts();
     })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bans' }, async ({ new: b }) => {
+      if (b && b.user_id === me.id) { const ban = await loadBan(); if (ban) showBan(ban); }
+    })
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, ({ new: p }) => {
       if (!peers[p.id]) return;
       peers[p.id] = p.username; avatars[p.id] = p.avatar || null;
@@ -502,6 +558,9 @@ function subscribe() {
 
 async function openShell() {
   if (!me) return;
+  const ban = await loadBan();
+  if (ban) return showBan(ban);
+  hideBan();
   $('#auth').hidden = true;
   $('#shell').hidden = false;
   syncSettings();
@@ -652,12 +711,13 @@ function syncSettings() {
   $('#name-form button').disabled = locked;
   $('#name-note').hidden = !locked;
   $('#avatar-remove').hidden = !hasPhoto(me.avatar);
+  $('#btn-admin').hidden = me.username !== SUPPORT_USER;
 }
 $('#btn-settings').addEventListener('click', openSettings);
 $('#me-avatar').addEventListener('click', openSettings);
 $('#settings-close').addEventListener('click', closeSettings);
 settings.addEventListener('click', (e) => { if (e.target === settings) closeSettings(); });
-addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSettings(); });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSettings(); closeAdmin(); } });
 
 /* Tema claro / oscuro */
 const currentTheme = () => document.documentElement.dataset.theme || 'dark';
@@ -743,6 +803,132 @@ $('#btn-support').addEventListener('click', async () => {
   closeSettings();
   renderContacts();
   openChat(id);
+});
+
+/* ---------- 6. Baneos y panel de administración ---------- */
+const fmt = (t) => new Date(t).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const parseUntil = (u) => (u === 'infinity' ? Infinity : Date.parse(u));
+
+async function loadBan() {
+  const { data } = await sb.from('bans').select('until,reason').eq('user_id', me.id).maybeSingle();
+  if (!data) return null;
+  const until = parseUntil(data.until);
+  return until > Date.now() ? { until, reason: data.reason } : null;
+}
+
+let banTimer = null;
+function showBan(ban) {
+  if (channel) { sb.removeChannel(channel); channel = null; }
+  $('#auth').hidden = true;
+  $('#shell').hidden = true;
+  closeSettings(); closeAdmin();
+  $('#ban-msg').textContent = ban.until === Infinity
+    ? 'Tu cuenta ha sido suspendida de forma permanente.'
+    : 'Tu cuenta está suspendida hasta el ' + fmt(ban.until) + '.';
+  $('#ban-reason').textContent = ban.reason ? 'Motivo: ' + ban.reason : '';
+  $('#banned').classList.add('open');
+  $('#banned').setAttribute('aria-hidden', 'false');
+  clearTimeout(banTimer);
+  const ms = ban.until - Date.now();
+  if (Number.isFinite(ms) && ms < 2e9) banTimer = setTimeout(() => location.reload(), ms + 1000);
+}
+function hideBan() {
+  clearTimeout(banTimer);
+  $('#banned').classList.remove('open');
+  $('#banned').setAttribute('aria-hidden', 'true');
+}
+$('#ban-logout').addEventListener('click', () => $('#btn-logout').click());
+
+const adminEl = $('#admin');
+let accounts = [], bans = {};
+const banInfo = (id) => {
+  const b = bans[id];
+  if (!b) return null;
+  const until = parseUntil(b.until);
+  return until > Date.now() ? { until, reason: b.reason } : null;
+};
+function closeAdmin() {
+  adminEl.classList.remove('open');
+  adminEl.setAttribute('aria-hidden', 'true');
+}
+async function openAdmin() {
+  if (!me || me.username !== SUPPORT_USER) return;
+  $('#adm-error').textContent = '';
+  adminEl.classList.add('open');
+  adminEl.setAttribute('aria-hidden', 'false');
+  await loadAccounts();
+}
+async function loadAccounts() {
+  let r = await sb.from('profiles').select('id,username,avatar,created_at').order('created_at');
+  if (r.error) r = await sb.from('profiles').select('id,username').order('username');
+  accounts = r.data || [];
+  const b = await sb.from('bans').select('user_id,until,reason');
+  bans = {};
+  (b.data || []).forEach((x) => { bans[x.user_id] = x; });
+  renderAccounts();
+}
+function renderAccounts() {
+  const q = $('#adm-search').value.trim().toLowerCase();
+  const rows = accounts.filter((a) => a.username.includes(q));
+  const nBan = accounts.filter((a) => banInfo(a.id)).length;
+  $('#adm-summary').textContent = `${accounts.length} cuentas · ${nBan} baneadas`;
+  $('#adm-list').innerHTML = rows.map((a) => {
+    const b = banInfo(a.id);
+    const self = a.id === me.id;
+    const status = b
+      ? `<span class="chip-s bad">${b.until === Infinity ? 'Permanente' : 'Hasta ' + fmt(b.until)}</span>`
+      : '<span class="chip-s ok">Activa</span>';
+    const action = self ? '' : b
+      ? '<button class="btn-mini" data-act="unban" type="button">Quitar ban</button>'
+      : '<button class="btn-mini danger" data-act="ban" type="button">Banear</button>';
+    return `<li data-id="${a.id}">
+      <div class="adm-row">${avatar(a.username, a.avatar)}
+        <div class="adm-info"><b>${nameHTML(a.username)}</b>${b && b.reason ? `<small>${esc(b.reason)}</small>` : ''}</div>
+        ${status}${action}</div>
+      <form class="adm-ban" hidden>
+        <select class="field" name="dur">
+          <option value="60">1 hora</option><option value="1440" selected>1 día</option>
+          <option value="10080">7 días</option><option value="43200">30 días</option>
+          <option value="">Permanente</option>
+        </select>
+        <input class="field" name="reason" maxlength="200" placeholder="Motivo (opcional)" autocomplete="off">
+        <button class="btn primary sm" type="submit">Confirmar ban</button>
+      </form></li>`;
+  }).join('') || '<li class="muted">Sin resultados.</li>';
+}
+async function adminCall(fn, args) {
+  const err = $('#adm-error');
+  err.textContent = '';
+  const { error } = await sb.rpc(fn, args);
+  if (error) {
+    err.textContent = /function|schema cache|relation/i.test(error.message) ? 'Falta ejecutar el SQL de baneos en Supabase.' : error.message;
+    return;
+  }
+  await loadAccounts();
+}
+$('#btn-admin').addEventListener('click', openAdmin);
+$('#admin-close').addEventListener('click', closeAdmin);
+adminEl.addEventListener('click', (e) => { if (e.target === adminEl) closeAdmin(); });
+$('#adm-search').addEventListener('input', renderAccounts);
+$('#adm-list').addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  const li = btn.closest('li');
+  if (btn.dataset.act === 'ban') {
+    const f = li.querySelector('.adm-ban');
+    f.hidden = !f.hidden;
+    return;
+  }
+  await adminCall('admin_unban', { target: li.dataset.id });
+});
+$('#adm-list').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target;
+  await adminCall('admin_ban', {
+    target: f.closest('li').dataset.id,
+    minutes: f.dur.value ? parseInt(f.dur.value, 10) : null,
+    reason: f.reason.value,
+  });
 });
 
 /* ---------- Arranque ---------- */
