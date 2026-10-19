@@ -1,4 +1,3 @@
-  
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -182,6 +181,46 @@ body{transition:background .4s,color .4s}
 .ban-body{text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;padding:32px 26px!important}
 .ban-ico{background:linear-gradient(135deg,#ff453a,#ff7a59);box-shadow:0 8px 30px rgba(255,69,58,.4)}
 @media(max-width:520px){.adm-row{flex-wrap:wrap}}
+
+/* Estado en línea */
+.av{position:relative;flex:none;width:max-content;height:max-content;--ring:var(--panel)}
+#contacts li:hover .av{--ring:var(--panel2)}
+#contacts li.active .av{--ring:color-mix(in srgb,var(--accent) 18%,var(--panel))}
+.status{position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 3px var(--ring);opacity:0;transform:scale(.3);transition:opacity .35s var(--ease),transform .5s var(--ease),background .5s var(--ease)}
+.status.show{opacity:1;transform:none}
+.status.on{background:var(--green)}
+.status.on::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--green);animation:ping 2.4s var(--ease) infinite}
+@keyframes ping{0%{opacity:.55;transform:scale(1)}80%,100%{opacity:0;transform:scale(2.3)}}
+.dot.off{background:var(--muted);box-shadow:none}
+.me small{min-height:16px}
+.swap{animation:swap .4s var(--ease)}
+@keyframes swap{from{opacity:0;transform:translateY(5px)}}
+
+/* Visto */
+.bubble.out small{display:flex;justify-content:flex-end;align-items:center;gap:5px;opacity:1;color:rgba(255,255,255,.72)}
+.ticks{display:inline-flex;width:17px;height:11px;transition:color .4s}
+.ticks svg{width:100%;height:100%;overflow:visible}
+.ticks path{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.ticks .t2{stroke-dasharray:14;stroke-dashoffset:14;transition:stroke-dashoffset .5s var(--ease) .05s}
+.ticks.read{color:#8ee9ff}
+.ticks.read .t2{stroke-dashoffset:0}
+
+/* Interruptor minimalista */
+.opt{display:flex;align-items:center;gap:16px;padding:13px 0}
+.opt+.opt{border-top:1px solid var(--line)}
+.opt-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.opt-txt b{font-size:15px;font-weight:600}
+.opt-txt small{color:var(--muted);font-size:12.5px;line-height:1.4}
+.opts{margin-top:-2px}
+.switch{position:relative;flex:none;width:48px;height:28px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);transition:border-color .4s var(--ease),box-shadow .4s var(--ease);outline:none}
+.switch::before{content:"";position:absolute;inset:-1px;border-radius:inherit;background:linear-gradient(135deg,var(--accent),var(--accent2));opacity:0;transition:opacity .4s var(--ease)}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:999px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.32);transition:transform .5s var(--ease),width .25s var(--ease)}
+.switch[aria-checked=true]::before{opacity:1}
+.switch[aria-checked=true]::after{transform:translateX(20px)}
+.switch:active::after{width:27px}
+.switch[aria-checked=true]:active::after{transform:translateX(15px)}
+.switch:focus-visible{box-shadow:0 0 0 4px rgba(91,76,240,.3)}
+.switch:disabled{opacity:.5}
 </style>
 </head>
 <body>
@@ -223,10 +262,10 @@ body{transition:background .4s,color .4s}
     <div id="shell" hidden>
       <aside id="sidebar">
         <div class="side-head">
-          <div class="avatar" id="me-avatar" title="Ajustes"></div>
+          <div class="av"><div class="avatar" id="me-avatar" title="Ajustes"></div><i class="status" id="me-status"></i></div>
           <div class="me">
             <strong id="me-name">usuario</strong>
-            <small><i class="dot"></i> en línea</small>
+            <small id="me-status-text"><i class="dot"></i><span>en línea</span></small>
           </div>
           <button class="icon-btn" id="btn-admin" title="Panel de administración" hidden>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -276,10 +315,10 @@ body{transition:background .4s,color .4s}
             <button class="icon-btn back" id="btn-back" title="Volver">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
-            <div class="avatar" id="peer-avatar"></div>
+            <div class="av"><div class="avatar" id="peer-avatar"></div><i class="status" id="peer-status"></i></div>
             <div class="me">
               <strong id="peer-name"></strong>
-              <small><i class="dot"></i> en línea</small>
+              <small id="peer-status-text"></small>
             </div>
           </header>
           <div id="messages"></div>
@@ -360,6 +399,19 @@ body{transition:background .4s,color .4s}
         <button type="button" data-theme="dark">Oscuro</button>
       </div>
 
+      <label class="set-label">Privacidad</label>
+      <div class="opts">
+        <div class="opt">
+          <div class="opt-txt"><b>Estado en línea</b><small>Muestra cuándo estás conectado y tu última vez. Si lo desactivas, tampoco verás el de los demás.</small></div>
+          <button class="switch" id="sw-status" type="button" role="switch" aria-checked="true" aria-label="Estado en línea"></button>
+        </div>
+        <div class="opt">
+          <div class="opt-txt"><b>Confirmación de lectura</b><small>Marca tus mensajes como vistos. Si la desactivas, tampoco verás cuándo leen los tuyos.</small></div>
+          <button class="switch" id="sw-read" type="button" role="switch" aria-checked="true" aria-label="Confirmación de lectura"></button>
+        </div>
+      </div>
+      <p class="error" id="priv-error"></p>
+
       <label class="set-label">Ayuda</label>
       <button class="btn soft" id="btn-support" type="button">Hablar con soporte</button>
       <p class="error" id="support-error"></p>
@@ -388,6 +440,10 @@ let unread = new Set();
 let channel = null;
 let mode = 'register';
 let avatars = {};       // id -> foto (data URL)
+let online = new Set(); // ids conectados ahora mismo (Realtime Presence)
+let lastSeen = {};      // id -> última vez en línea (ISO)
+let peerShow = {};      // id -> si ese usuario comparte su estado
+let presence = null, presTimer = null, token = null;
 const SUPPORT_USER = 'admin.';
 const VERIFIED = [SUPPORT_USER];
 const BADGE = '<span class="vbadge" title="Cuenta verificada"><svg viewBox="0 0 24 24" width="16" height="16"><g fill="#20a4f3"><rect x="3" y="3" width="18" height="18" rx="5"/><rect x="3" y="3" width="18" height="18" rx="5" transform="rotate(45 12 12)"/></g><path d="M8 12.4l2.8 2.8 5.4-5.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
@@ -427,7 +483,7 @@ async function loadMe() {
     const username = session.user.email.split('@')[0];
     ({ data: p } = await sb.from('profiles').insert({ id: session.user.id, username }).select('id,username').single());
   }
-  me = p || null;
+  me = normMe(p) || null;
 }
 
 $('#btn-start').addEventListener('click', () => {
@@ -481,8 +537,9 @@ $('#step-username').addEventListener('submit', async (e) => {
 
 $('#btn-logout').addEventListener('click', async () => {
   if (channel) { sb.removeChannel(channel); channel = null; }
+  await stopPresence(true);
   await sb.auth.signOut();
-  me = null; active = null; peers = {}; avatars = {}; cache = {}; unread.clear();
+  me = null; active = null; peers = {}; avatars = {}; cache = {}; unread.clear(); lastSeen = {}; peerShow = {};
   closeSettings(); closeAdmin(); hideBan();
   $('#shell').hidden = true;
   $('#shell').classList.remove('chat-open');
@@ -497,18 +554,22 @@ $('#btn-logout').addEventListener('click', async () => {
 
 /* ---------- 3. Datos ---------- */
 async function fetchProfiles(filter) {
-  let r = await filter(sb.from('profiles').select('id,username,avatar'));
-  if (r.error) r = await filter(sb.from('profiles').select('id,username')); // por si aún no existe la columna avatar
-  return r.data || [];
+  // prueba de más a menos columnas, por si aún no se ejecutó el SQL
+  for (const cols of ['id,username,avatar,last_seen,show_status,show_read', 'id,username,avatar', 'id,username']) {
+    const r = await filter(sb.from('profiles').select(cols));
+    if (!r.error) return r.data || [];
+  }
+  return [];
 }
+const normMe = (p) => { if (p) { p.show_status = p.show_status !== false; p.show_read = p.show_read !== false; } return p; };
 
 async function loadContacts() {
   const { data } = await sb.from('contacts').select('user_id,friend_id');
   const ids = [...new Set((data || []).map((r) => (r.user_id === me.id ? r.friend_id : r.user_id)))];
-  peers = {}; avatars = {};
+  peers = {}; avatars = {}; lastSeen = {}; peerShow = {};
   if (ids.length) {
     const ps = await fetchProfiles((q) => q.in('id', ids));
-    ps.forEach((p) => { peers[p.id] = p.username; avatars[p.id] = p.avatar || null; });
+    ps.forEach((p) => { peers[p.id] = p.username; avatars[p.id] = p.avatar || null; lastSeen[p.id] = p.last_seen || null; peerShow[p.id] = p.show_status; });
   }
 }
 
@@ -533,19 +594,34 @@ function subscribe() {
       const pid = addToCache(m);
       if (!pid) return;
       if (!peers[pid]) await loadContacts();
-      if (pid === active) appendMessage(m);
+      if (pid === active) { appendMessage(m); if (m.sender_id !== me.id) markRead(pid); }
       else if (m.sender_id !== me.id) unread.add(pid);
       renderContacts();
+    })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, ({ new: m }) => {
+      if (!m || !m.read_at) return;
+      const pid = m.sender_id === me.id ? m.receiver_id : m.sender_id;
+      const item = (cache[pid] || []).find((x) => x.id === m.id);
+      if (item) item.read_at = m.read_at;
+      const t = document.querySelector(`.bubble[data-id="${m.id}"] .ticks`);
+      if (t) setRead(t, m.read_at);
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bans' }, async ({ new: b }) => {
       if (b && b.user_id === me.id) { const ban = await loadBan(); if (ban) showBan(ban); }
     })
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, ({ new: p }) => {
       if (!peers[p.id]) return;
-      peers[p.id] = p.username; avatars[p.id] = p.avatar || null;
+      // Realtime puede omitir columnas grandes sin cambios (la foto): solo se toca lo que llega
+      const before = [peers[p.id], avatars[p.id]].join('|');
+      if ('username' in p) peers[p.id] = p.username;
+      if ('avatar' in p) avatars[p.id] = p.avatar || null;
+      if ('last_seen' in p) lastSeen[p.id] = p.last_seen;
+      if ('show_status' in p) peerShow[p.id] = p.show_status;
+      refreshStatus();
+      if ([peers[p.id], avatars[p.id]].join('|') === before) return; // solo cambió el estado
       if (p.id === active) {
-        $('#peer-name').innerHTML = nameHTML(p.username);
-        $('#peer-avatar').outerHTML = avatar(p.username, p.avatar, 'peer-avatar');
+        $('#peer-name').innerHTML = nameHTML(peers[p.id]);
+        paint($('#peer-avatar'), peers[p.id], avatars[p.id]);
       }
       renderContacts();
     })
@@ -567,6 +643,7 @@ async function openShell() {
   await Promise.all([loadContacts(), loadMessages()]);
   renderContacts();
   subscribe();
+  startPresence();
 }
 
 /* ---------- 4. Interfaz ---------- */
@@ -597,9 +674,10 @@ function renderContacts() {
   ul.innerHTML = list.map(([id, n]) => {
     const last = (cache[id] || []).slice(-1)[0];
     return `<li data-id="${id}" class="${id === active ? 'active' : ''}">
-      ${avatar(n, avatars[id])}<div class="info"><b>${nameHTML(n)}</b><span>${last ? esc(last.text) : 'Di hola 👋'}</span></div>
+      <div class="av">${avatar(n, avatars[id])}<i class="status" data-uid="${id}"></i></div><div class="info"><b>${nameHTML(n)}</b><span>${last ? esc(last.text) : 'Di hola 👋'}</span></div>
       ${unread.has(id) ? '<i class="badge"></i>' : ''}</li>`;
   }).join('');
+  refreshStatus();
 }
 
 $('#contacts').addEventListener('click', (e) => {
@@ -641,10 +719,13 @@ function openChat(id) {
   $('#empty').hidden = true;
   $('#conv').hidden = false;
   $('#peer-name').innerHTML = nameHTML(peers[id]);
-  $('#peer-avatar').outerHTML = avatar(peers[id], avatars[id], 'peer-avatar');
+  paint($('#peer-avatar'), peers[id], avatars[id]);
+  $('#peer-status').dataset.uid = id;
+  $('#peer-status-text').dataset.v = '__init__';
   $('#shell').classList.add('chat-open');
   renderMessages();
   renderContacts();
+  markRead(id);
   setTimeout(() => $('#msg-input').focus(), 300);
 }
 
@@ -654,9 +735,28 @@ $('#btn-back').addEventListener('click', () => {
   renderContacts();
 });
 
+const TICKS = '<span class="ticks" title="Enviado"><svg viewBox="0 0 17 11"><path d="M1 6l3.5 3.5L11 1.5"/><path class="t2" d="M6.5 9.5l.2.2L13 1.5"/></svg></span>';
+function setRead(el, at) {
+  el.classList.add('read');
+  el.title = 'Visto ' + new Date(at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}
 function bubbleHTML(m) {
   const t = new Date(m.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-  return `<div class="bubble ${m.sender_id === me.id ? 'out' : 'in'}">${esc(m.text)}<small>${t}</small></div>`;
+  const out = m.sender_id === me.id;
+  let ticks = '';
+  if (out && me.show_read) ticks = m.read_at ? TICKS.replace('class="ticks"', 'class="ticks read"').replace('title="Enviado"', `title="Visto ${t}"`) : TICKS;
+  return `<div class="bubble ${out ? 'out' : 'in'}" data-id="${m.id}">${esc(m.text)}<small>${t}${ticks}</small></div>`;
+}
+
+/* Marca como vistos los mensajes recibidos del chat abierto */
+async function markRead(pid) {
+  if (!me || !me.show_read || document.hidden || pid !== active) return;
+  const list = (cache[pid] || []).filter((m) => m.sender_id === pid && !m.read_at);
+  if (!list.length) return;
+  const { error } = await sb.rpc('mark_read', { sender: pid });
+  if (error) return;
+  const now = new Date().toISOString();
+  list.forEach((m) => { m.read_at = now; });
 }
 function scrollDown() {
   const box = $('#messages');
@@ -691,7 +791,7 @@ const settings = $('#settings');
 function openSettings() {
   if (!me) return;
   syncSettings();
-  ['avatar-error', 'name-error', 'support-error'].forEach((i) => { $('#' + i).textContent = ''; });
+  ['avatar-error', 'name-error', 'support-error', 'priv-error'].forEach((i) => { $('#' + i).textContent = ''; });
   settings.classList.add('open');
   settings.setAttribute('aria-hidden', 'false');
 }
@@ -712,6 +812,9 @@ function syncSettings() {
   $('#name-note').hidden = !locked;
   $('#avatar-remove').hidden = !hasPhoto(me.avatar);
   $('#btn-admin').hidden = me.username !== SUPPORT_USER;
+  $('#sw-status').setAttribute('aria-checked', me.show_status);
+  $('#sw-read').setAttribute('aria-checked', me.show_read);
+  refreshStatus();
 }
 $('#btn-settings').addEventListener('click', openSettings);
 $('#me-avatar').addEventListener('click', openSettings);
@@ -729,6 +832,116 @@ function setTheme(t, save = true) {
 }
 document.querySelectorAll('#theme-seg button').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.theme)));
 setTheme(currentTheme(), false);
+
+
+/* Privacidad: interruptores */
+const PRIV_HINT = 'No se pudo guardar. Falta ejecutar el SQL de estado y visto en Supabase.';
+async function toggleSetting(col, btn) {
+  const err = $('#priv-error');
+  err.textContent = '';
+  const val = !me[col];
+  me[col] = val; btn.setAttribute('aria-checked', val);   // cambio inmediato (la animación no espera a la red)
+  const patch = { [col]: val };
+  if (col === 'show_status') patch.last_seen = val ? new Date().toISOString() : null;
+  const { data, error } = await sb.from('profiles').update(patch).eq('id', me.id).select('id');
+  if (error || !data || !data.length) {
+    me[col] = !val; btn.setAttribute('aria-checked', !val);
+    err.textContent = PRIV_HINT;
+    return;
+  }
+  if (col === 'show_status') { val ? startPresence() : stopPresence(); refreshStatus(); }
+  else { if (active) { renderMessages(); markRead(active); } }
+}
+$('#sw-status').addEventListener('click', (e) => toggleSetting('show_status', e.currentTarget));
+$('#sw-read').addEventListener('click', (e) => toggleSetting('show_read', e.currentTarget));
+
+/* ---------- Estado en línea ---------- */
+const statusVisible = (id) => !!me && me.show_status && peerShow[id] !== false;
+
+function lastSeenText(t) {
+  const d = new Date(t), now = new Date();
+  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const day = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((day(now) - day(d)) / 864e5);
+  if (diff <= 0) return now - d < 60000 ? 'hace un momento' : 'hoy a las ' + time;
+  if (diff === 1) return 'ayer a las ' + time;
+  return 'el ' + d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + ' a las ' + time;
+}
+
+function refreshStatus() {
+  document.querySelectorAll('.status[data-uid]').forEach((el) => {
+    const id = el.dataset.uid, vis = statusVisible(id);
+    el.classList.toggle('show', vis);
+    el.classList.toggle('on', vis && online.has(id));
+  });
+  if (!me) return;
+  $('#me-status').classList.add('show');
+  $('#me-status').classList.toggle('on', me.show_status);
+  $('#me-status-text .dot').classList.toggle('off', !me.show_status);
+  $('#me-status-text span').textContent = me.show_status ? 'en línea' : 'estado oculto';
+  updatePeerText();
+}
+
+function updatePeerText() {
+  const el = $('#peer-status-text');
+  if (!active || !el) return;
+  let html = '';
+  if (statusVisible(active)) {
+    if (online.has(active)) html = '<i class="dot"></i><span>en línea</span>';
+    else html = lastSeen[active] ? 'última vez ' + esc(lastSeenText(lastSeen[active])) : 'desconectado';
+  }
+  if (el.dataset.v === html) return;
+  const first = el.dataset.v === '__init__';
+  el.dataset.v = html;
+  el.innerHTML = html;
+  if (!first) { el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap'); }
+}
+setInterval(updatePeerText, 30000);
+
+function writeLastSeen() {
+  if (!me || !me.show_status) return;
+  sb.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', me.id).then(() => {});
+}
+
+async function startPresence() {
+  await stopPresence();
+  if (!me || !me.show_status) return;
+  presence = sb.channel('presence-chat', { config: { presence: { key: me.id } } });
+  presence
+    .on('presence', { event: 'sync' }, () => { online = new Set(Object.keys(presence.presenceState())); refreshStatus(); })
+    .on('presence', { event: 'leave' }, ({ key }) => { if (key !== me.id) lastSeen[key] = new Date().toISOString(); })
+    .subscribe((st) => { if (st === 'SUBSCRIBED' && !document.hidden) presence.track({ at: Date.now() }); });
+  writeLastSeen();
+  presTimer = setInterval(() => { if (!document.hidden) writeLastSeen(); }, 120000);
+}
+
+async function stopPresence(final) {
+  clearInterval(presTimer); presTimer = null;
+  if (final) writeLastSeen();
+  if (presence) { const p = presence; presence = null; try { await p.untrack(); } catch (_) {} sb.removeChannel(p); }
+  online = new Set();
+  refreshStatus();
+}
+
+// Al ocultar la pestaña: desconectado + se guarda la última vez. Al volver: en línea y se marcan los mensajes como vistos.
+document.addEventListener('visibilitychange', () => {
+  if (!me) return;
+  if (document.hidden) { if (presence) presence.untrack(); writeLastSeen(); }
+  else { if (presence) presence.track({ at: Date.now() }); if (active) markRead(active); }
+});
+addEventListener('focus', () => { if (active) markRead(active); });
+// Al cerrar la pestaña, el navegador cancela las peticiones normales: se usa fetch con keepalive
+sb.auth.onAuthStateChange((_e, s) => { token = s ? s.access_token : null; });
+addEventListener('pagehide', () => {
+  if (!me || !me.show_status || !token) return;
+  try {
+    fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${me.id}`, {
+      method: 'PATCH', keepalive: true,
+      headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ last_seen: new Date().toISOString() }),
+    });
+  } catch (_) {}
+});
 
 /* Foto de perfil */
 function resizeImage(file, size) {
@@ -819,6 +1032,7 @@ async function loadBan() {
 let banTimer = null;
 function showBan(ban) {
   if (channel) { sb.removeChannel(channel); channel = null; }
+  stopPresence(true);
   $('#auth').hidden = true;
   $('#shell').hidden = true;
   closeSettings(); closeAdmin();
