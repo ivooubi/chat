@@ -1,33 +1,45 @@
+/* Service worker de chat. — recibe notificaciones push */
+const ICON = new URL('icon-192.png', self.registration.scope).href;
+
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 
-self.addEventListener('push', (e) => {
+self.addEventListener('push', (event) => {
   let d = {};
-  try { d = e.data.json(); } catch (_) {}
-  e.waitUntil((async () => {
+  try { d = event.data ? event.data.json() : {}; }
+  catch (_) { d = { title: 'chat.', body: event.data ? event.data.text() : '' }; }
+
+  event.waitUntil((async () => {
+    // Si estás usando la app ahora mismo ya lo ves en pantalla (iOS obliga a mostrar siempre el aviso)
     const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    if (wins.some((w) => w.visibilityState === 'visible' && w.focused)) return;
+    const ios = /iphone|ipad|ipod/i.test(self.navigator.userAgent);
+    if (!ios && wins.some((c) => c.visibilityState === 'visible' && c.focused)) return;
+
     await self.registration.showNotification(d.title || 'chat.', {
       body: d.body || '',
-      tag: d.tag || 'chat',
-      renotify: true,
-      icon: 'icon-192.png',
-      badge: 'icon-192.png',
-      data: { uid: d.uid },
+      icon: ICON,
+      badge: ICON,
+      tag: d.tag || undefined,
+      renotify: !!d.tag,
+      data: { chat: d.chat || null },
     });
   })());
 });
 
-self.addEventListener('notificationclick', (e) => {
-  e.notification.close();
-  const uid = e.notification.data && e.notification.data.uid;
-  e.waitUntil((async () => {
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const chat = (event.notification.data || {}).chat;
+  const target = new URL(chat ? '?chat=' + chat : './', self.registration.scope).href;
+
+  event.waitUntil((async () => {
     const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    if (wins.length) {
-      await wins[0].focus();
-      if (uid) wins[0].postMessage({ openChat: uid });
-      return;
+    for (const w of wins) {
+      if (w.url.startsWith(self.registration.scope)) {
+        await w.focus();
+        if (chat) w.postMessage({ openChat: chat });
+        return;
+      }
     }
-    await self.clients.openWindow(uid ? './?chat=' + uid : './');
+    await self.clients.openWindow(target);
   })());
 });
