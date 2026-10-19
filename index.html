@@ -4,7 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>chat.</title>
-<script>try{var t=localStorage.getItem("chat.theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#050507">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="chat.">
+  <script>try{var t=localStorage.getItem("chat.theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 :root{
   --bg:#050507; --panel:#0e0e12; --panel2:#15151b; --line:#23232c;
@@ -412,6 +418,22 @@ body{transition:background .4s,color .4s}
       </div>
       <p class="error" id="priv-error"></p>
 
+     <label class="set-label">Notificaciones</label>
+<div class="opts">
+  <div class="opt">
+    <div class="opt-txt"><b>Activar notificaciones</b><small>Avisos en este dispositivo, incluso con la app cerrada. Te pedirá permiso la primera vez.</small></div>
+    <button class="switch" id="sw-notif" type="button" role="switch" aria-checked="false" aria-label="Activar notificaciones"></button>
+  </div>
+  <div class="opt">
+    <div class="opt-txt"><b>Mensajes nuevos</b><small>Te avisa cuando te escriben.</small></div>
+    <button class="switch" id="sw-n-msg" type="button" role="switch" aria-checked="true" aria-label="Notificar mensajes"></button>
+  </div>
+  <div class="opt">
+    <div class="opt-txt"><b>Alguien se conecta</b><small>Te avisa cuando un contacto se pone en línea.</small></div>
+    <button class="switch" id="sw-n-conn" type="button" role="switch" aria-checked="true" aria-label="Notificar conexiones"></button>
+  </div>
+</div>
+<p class="error" id="notif-error"></p>
       <label class="set-label">Ayuda</label>
       <button class="btn soft" id="btn-support" type="button">Hablar con soporte</button>
       <p class="error" id="support-error"></p>
@@ -538,6 +560,7 @@ $('#step-username').addEventListener('submit', async (e) => {
 $('#btn-logout').addEventListener('click', async () => {
   if (channel) { sb.removeChannel(channel); channel = null; }
   await stopPresence(true);
+   try { await pushRemove(); } catch (_) {}
   await sb.auth.signOut();
   me = null; active = null; peers = {}; avatars = {}; cache = {}; unread.clear(); lastSeen = {}; peerShow = {};
   closeSettings(); closeAdmin(); hideBan();
@@ -617,6 +640,7 @@ function subscribe() {
       if ('avatar' in p) avatars[p.id] = p.avatar || null;
       if ('last_seen' in p) lastSeen[p.id] = p.last_seen;
       if ('show_status' in p) peerShow[p.id] = p.show_status;
+       syncNotif();
       refreshStatus();
       if ([peers[p.id], avatars[p.id]].join('|') === before) return; // solo cambió el estado
       if (p.id === active) {
@@ -644,6 +668,9 @@ async function openShell() {
   renderContacts();
   subscribe();
   startPresence();
+  if (notif.on && pushSupported() && Notification.permission === 'granted') pushSave().catch(() => {});
+  if (pendingChat && peers[pendingChat]) openChat(pendingChat);
+  pendingChat = null;
 }
 
 /* ---------- 4. Interfaz ---------- */
@@ -911,7 +938,7 @@ async function startPresence() {
     .on('presence', { event: 'sync' }, () => { online = new Set(Object.keys(presence.presenceState())); refreshStatus(); })
     .on('presence', { event: 'leave' }, ({ key }) => { if (key !== me.id) lastSeen[key] = new Date().toISOString(); })
     .subscribe((st) => { if (st === 'SUBSCRIBED' && !document.hidden) presence.track({ at: Date.now() }); });
-  writeLastSeen();
+  notifyOnline().finally(writeLastSeen);
   presTimer = setInterval(() => { if (!document.hidden) writeLastSeen(); }, 120000);
 }
 
@@ -927,7 +954,7 @@ async function stopPresence(final) {
 document.addEventListener('visibilitychange', () => {
   if (!me) return;
   if (document.hidden) { if (presence) presence.untrack(); writeLastSeen(); }
-  else { if (presence) presence.track({ at: Date.now() }); if (active) markRead(active); }
+ if (presence) { notifyOnline(); presence.track({ at: Date.now() }); }
 });
 addEventListener('focus', () => { if (active) markRead(active); });
 // Al cerrar la pestaña, el navegador cancela las peticiones normales: se usa fetch con keepalive
@@ -1145,8 +1172,108 @@ $('#adm-list').addEventListener('submit', async (e) => {
   });
 });
 
-/* ---------- Arranque ---------- */
+/* ---------- Notificaciones push ---------- */
+const VAPID_PUBLIC = 'BAWUP1e_NZ8YjzrW52h4i9lU3EUbHQ0BDjgh9mAwFQWwW3gHG-HXTUcIWViXq1XI5tQgBcbffkp2-g3tx7cjCIE';
+const NK = 'chat.notif.';
+const nget = (k, d) => { try { const v = localStorage.getItem(NK + k); return v === null ? d : v === '1'; } catch (_) { return d; } };
+const nset = (k, v) => { try { localStorage.setItem(NK + k, v ? '1' : '0'); } catch (_) {} };
+const notif = { on: nget('on', false), msg: nget('msg', true), conn: nget('conn', true) };
+const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const standalone = !!navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+let pendingChat = new URLSearchParams(location.search).get('chat');
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    const id = e.data && e.data.openChat;
+    if (!id) return;
+    if (me && !$('#shell').hidden && peers[id]) openChat(id); else pendingChat = id;
+  });
+}
+
+const b64ToU8 = (s) => {
+  const p = '='.repeat((4 - (s.length % 4)) % 4);
+  const raw = atob((s + p).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+};
+const getSub = async () => (await navigator.serviceWorker.ready).pushManager.getSubscription();
+
+async function pushSave() {
+  const reg = await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(VAPID_PUBLIC) });
+  const j = sub.toJSON();
+  const { error } = await sb.rpc('save_push_sub', {
+    p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth_key: j.keys.auth, p_msg: notif.msg, p_conn: notif.conn,
+  });
+  if (error) throw new Error(/function|schema cache/i.test(error.message) ? 'Falta ejecutar el SQL de notificaciones en Supabase.' : error.message);
+}
+async function pushRemove() {
+  const sub = await getSub();
+  if (!sub) return;
+  await sb.rpc('delete_push_sub', { p_endpoint: sub.endpoint });
+  await sub.unsubscribe();
+}
+async function notifyOnline() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    await fetch(`${SUPABASE_URL}/functions/v1/push`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: 'Bearer ' + session.access_token },
+      body: JSON.stringify({ type: 'online' }),
+    });
+  } catch (_) {}
+}
+
+function syncNotif() {
+  const sup = pushSupported();
+  const on = sup && notif.on && Notification.permission === 'granted';
+  $('#sw-notif').setAttribute('aria-checked', on);
+  $('#sw-n-msg').setAttribute('aria-checked', notif.msg);
+  $('#sw-n-conn').setAttribute('aria-checked', notif.conn);
+  $('#sw-notif').disabled = !sup;
+  $('#sw-n-msg').disabled = $('#sw-n-conn').disabled = !on;
+  $('#notif-error').textContent = !sup
+    ? (isIOS && !standalone
+        ? 'En iPhone: pulsa Compartir → “Añadir a pantalla de inicio”, abre chat. desde el icono y activa las notificaciones aquí.'
+        : 'Tu navegador no admite notificaciones push.')
+    : Notification.permission === 'denied'
+      ? 'Las notificaciones están bloqueadas. Actívalas en los permisos del sitio en tu navegador.'
+      : '';
+}
+
+$('#sw-notif').addEventListener('click', async () => {
+  if (!pushSupported()) return;
+  let msg = '';
+  try {
+    if (notif.on) {
+      notif.on = false; nset('on', false);
+      await pushRemove();
+    } else {
+      let perm = Notification.permission;
+      if (perm === 'default') perm = await Notification.requestPermission();
+      notif.on = perm === 'granted'; nset('on', notif.on);
+      if (notif.on) await pushSave();
+    }
+  } catch (ex) {
+    notif.on = false; nset('on', false);
+    msg = 'No se pudo activar: ' + ex.message;
+  }
+  syncNotif();
+  if (msg) $('#notif-error').textContent = msg;
+});
+[['msg', '#sw-n-msg'], ['conn', '#sw-n-conn']].forEach(([k, sel]) =>
+  $(sel).addEventListener('click', () => {
+    notif[k] = !notif[k]; nset(k, notif[k]); syncNotif();
+    pushSave().catch(() => {});
+  })
+);
+syncNotif();
+  /* ---------- Arranque ---------- */
 (async () => {
+  if (new URLSearchParams(location.search).get('chat')) enter();
   await loadMe();
   if (me) $('#btn-start').textContent = 'Entrar como ' + me.username;
   if (entered && me) openShell();
