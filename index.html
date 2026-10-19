@@ -5,11 +5,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>chat.</title>
+<script>try{var t=localStorage.getItem("chat.theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 :root{
   --bg:#050507; --panel:#0e0e12; --panel2:#15151b; --line:#23232c;
   --text:#f2f2f7; --muted:#8e8e99; --accent:#5b4cf0; --accent2:#8a7bff; --green:#30d158; --red:#ff453a;
-  --ease:cubic-bezier(.22,1,.36,1);
+  --ease:cubic-bezier(.22,1,.36,1); --glass:rgba(14,14,18,.7); --glow:#1a1740; --thumb:#2a2a35;
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",Roboto,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -24,7 +25,7 @@ button{cursor:pointer;border:0;background:none}
 #intro,#app{height:100dvh;position:relative}
 
 /* Intro */
-#intro{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;cursor:pointer;user-select:none}
+#intro{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;color:#f2f2f7;--muted:#8e8e99;cursor:pointer;user-select:none}
 #intro h1{font-size:clamp(64px,16vw,200px);font-weight:700;letter-spacing:-.05em;opacity:0;transform:translateY(24px) scale(.98);animation:rise 1.2s var(--ease) .2s forwards}
 #intro h1 span{color:var(--accent);display:inline-block;animation:pulse 2.4s ease-in-out 1.4s infinite}
 .hint{position:absolute;bottom:6vh;display:flex;gap:6px;align-items:center;color:var(--muted);font-size:14px;opacity:0;animation:rise 1s var(--ease) 1.2s forwards}
@@ -35,7 +36,7 @@ button{cursor:pointer;border:0;background:none}
 
 /* App */
 #app{display:flex;align-items:center;justify-content:center;padding:clamp(0px,2vw,28px);
-  background:radial-gradient(900px 500px at 50% -10%,#1a1740 0,transparent 60%),var(--bg)}
+  background:radial-gradient(900px 500px at 50% -10%,var(--glow) 0,transparent 60%),var(--bg)}
 
 /* Tarjetas de acceso */
 #auth{width:100%;max-width:400px;position:relative}
@@ -86,7 +87,7 @@ button{cursor:pointer;border:0;background:none}
 #contacts .info b{font-size:15px;font-weight:600}
 #contacts .info span{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .no-contacts{color:var(--muted);font-size:13px;text-align:center;padding:24px 10px;cursor:default!important}
-.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:16px;flex:none;color:#fff;text-transform:uppercase}
+.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:16px;flex:none;color:#fff;text-transform:uppercase;background-size:cover;background-position:center}
 
 .promo{background:var(--panel2);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:4px}
 .promo small{color:var(--muted);font-size:12px;line-height:1.4}
@@ -96,17 +97,17 @@ button{cursor:pointer;border:0;background:none}
 #chat{display:flex;min-width:0;min-height:0;background:var(--bg)}
 .empty{margin:auto;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:20px}
 #conv{display:flex;flex-direction:column;width:100%;min-height:0;animation:pop .5s var(--ease)}
-.chat-head{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);background:rgba(14,14,18,.7);backdrop-filter:blur(20px)}
+.chat-head{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--glass);backdrop-filter:blur(20px)}
 .back{display:none}
 #messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:6px;min-height:0}
 .bubble{max-width:72%;padding:10px 15px;border-radius:20px;font-size:15px;line-height:1.35;word-wrap:break-word;animation:bubble .45s var(--ease)}
-.bubble.me{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent2));border-bottom-right-radius:6px}
-.bubble.them{align-self:flex-start;background:var(--panel2);border:1px solid var(--line);border-bottom-left-radius:6px}
+.bubble.out{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent2));border-bottom-right-radius:6px}
+.bubble.in{align-self:flex-start;background:var(--panel2);border:1px solid var(--line);border-bottom-left-radius:6px}
 .bubble small{display:block;font-size:10px;opacity:.6;margin-top:3px;text-align:right}
 @keyframes bubble{from{opacity:0;transform:translateY(12px) scale(.9)}}
 .day{align-self:center;color:var(--muted);font-size:12px;margin:8px 0}
 
-#composer{display:flex;gap:10px;padding:14px 18px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(14,14,18,.7)}
+#composer{display:flex;gap:10px;padding:14px 18px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--glass)}
 #composer input{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:12px 18px;outline:0;font-size:15px;transition:border-color .2s,box-shadow .2s}
 #composer input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(91,76,240,.2)}
 .send{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;transition:transform .2s var(--ease)}
@@ -114,7 +115,7 @@ button{cursor:pointer;border:0;background:none}
 .send:active{transform:scale(.9)}
 
 ::-webkit-scrollbar{width:8px}
-::-webkit-scrollbar-thumb{background:#2a2a35;border-radius:8px}
+::-webkit-scrollbar-thumb{background:var(--thumb);border-radius:8px}
 
 /* Móvil */
 @media(max-width:760px){
@@ -127,6 +128,39 @@ button{cursor:pointer;border:0;background:none}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .link{color:var(--accent2);font-size:13px}
 .badge{width:10px;height:10px;border-radius:50%;background:var(--accent2);flex:none;box-shadow:0 0 8px var(--accent)}
+
+:root[data-theme=light]{--bg:#f5f5fa;--panel:#ffffff;--panel2:#ececf3;--line:#e0e0e8;--text:#111114;--muted:#6e6e78;--glass:rgba(255,255,255,.78);--glow:#d9d4ff;--thumb:#c9c9d3;color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+body{transition:background .4s,color .4s}
+.tag-s{font-style:normal;font-size:10px;background:rgba(48,209,88,.15);color:var(--green);padding:1px 6px;border-radius:5px;margin-left:4px;font-weight:600;vertical-align:middle}
+#me-avatar{cursor:pointer;width:38px;height:38px;font-size:15px;transition:transform .2s var(--ease)}
+#me-avatar:active{transform:scale(.92)}
+
+/* Ajustes */
+.overlay{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);opacity:0;visibility:hidden;transition:opacity .35s var(--ease),background .45s,backdrop-filter .45s var(--ease),-webkit-backdrop-filter .45s var(--ease),visibility 0s .45s}
+.overlay.open{opacity:1;visibility:visible;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);transition:opacity .35s var(--ease),background .45s,backdrop-filter .45s var(--ease),-webkit-backdrop-filter .45s var(--ease),visibility 0s}
+.sheet{width:100%;max-width:420px;max-height:calc(100dvh - 32px);overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:28px;box-shadow:0 40px 100px rgba(0,0,0,.5);transform:translateY(32px) scale(.94);opacity:0;transition:transform .55s var(--ease),opacity .3s,background .4s}
+.overlay.open .sheet{transform:none;opacity:1}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;padding:20px 22px 4px}
+.sheet-head h3{font-size:20px;letter-spacing:-.02em}
+.sheet-body{padding:8px 22px 24px}
+.set-profile{display:flex;align-items:center;gap:16px;margin-top:8px}
+.set-av-wrap{position:relative;cursor:pointer;flex:none}
+.avatar.big{width:76px;height:76px;font-size:30px}
+.cam-btn{position:absolute;right:-4px;bottom:-4px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;border:3px solid var(--panel);pointer-events:none}
+.set-profile-info{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
+.set-profile-info strong{font-size:18px}
+.set-label{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:20px 0 8px}
+.row{display:flex;gap:8px}
+.row .field{flex:1;min-width:0}
+.sheet .error{margin-top:8px;text-align:left}
+.seg{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:3px}
+.seg button{position:relative;z-index:1;padding:9px;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted);transition:color .3s}
+.seg button.on{color:#fff}
+.seg-pill{position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));transition:transform .4s var(--ease)}
+.seg[data-v=dark] .seg-pill{transform:translateX(100%)}
+.btn.soft{background:var(--panel2);border:1px solid var(--line);color:var(--text)}
+.field:disabled{opacity:.5}
 </style>
 </head>
 <body>
@@ -168,11 +202,14 @@ button{cursor:pointer;border:0;background:none}
     <div id="shell" hidden>
       <aside id="sidebar">
         <div class="side-head">
-          <div class="logo-badge small">#</div>
+          <div class="avatar" id="me-avatar" title="Ajustes"></div>
           <div class="me">
             <strong id="me-name">usuario</strong>
             <small><i class="dot"></i> en línea</small>
           </div>
+          <button class="icon-btn" id="btn-settings" title="Ajustes">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+          </button>
           <button class="icon-btn" id="btn-logout" title="Cerrar sesión">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
           </button>
@@ -234,6 +271,47 @@ button{cursor:pointer;border:0;background:none}
   </section>
 </div>
 
+<div id="settings" class="overlay" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-label="Ajustes">
+    <div class="sheet-head">
+      <h3>Ajustes</h3>
+      <button class="icon-btn" id="settings-close" title="Cerrar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <div class="set-profile">
+        <div class="set-av-wrap" id="set-av-wrap" title="Cambiar foto">
+          <div class="avatar big" id="set-avatar"></div>
+          <span class="cam-btn"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+        </div>
+        <input type="file" id="avatar-file" accept="image/*" hidden>
+        <div class="set-profile-info">
+          <strong id="set-name-label"></strong>
+          <button class="link" id="avatar-remove" type="button">Quitar foto</button>
+        </div>
+      </div>
+      <p class="error" id="avatar-error"></p>
+
+      <label class="set-label" for="name-input">Nombre de usuario</label>
+      <form id="name-form" class="row" autocomplete="off">
+        <input id="name-input" class="field" maxlength="16" spellcheck="false" autocapitalize="none">
+        <button class="btn primary sm" type="submit">Guardar</button>
+      </form>
+      <p class="error" id="name-error"></p>
+
+      <label class="set-label">Apariencia</label>
+      <div class="seg" id="theme-seg" data-v="dark">
+        <i class="seg-pill"></i>
+        <button type="button" data-theme="light">Claro</button>
+        <button type="button" data-theme="dark">Oscuro</button>
+      </div>
+
+      <label class="set-label">Ayuda</label>
+      <button class="btn soft" id="btn-support" type="button">Hablar con soporte</button>
+      <p class="error" id="support-error"></p>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ===== chat. — conectado a Supabase ===== */
@@ -254,6 +332,8 @@ let cache = {};         // id contacto -> [mensajes]
 let unread = new Set();
 let channel = null;
 let mode = 'register';
+let avatars = {};       // id -> foto (data URL)
+const SUPPORT_USER = 'ivooubi';
 
 /* ---------- 1. Intro: click / scroll / deslizar ---------- */
 const stage = $('#stage');
@@ -284,7 +364,7 @@ function showStep(id) {
 async function loadMe() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { me = null; return; }
-  let { data: p } = await sb.from('profiles').select('id,username').eq('id', session.user.id).maybeSingle();
+  let [p] = await fetchProfiles((q) => q.eq('id', session.user.id).limit(1));
   if (!p) { // cuenta creada pero sin perfil (registro interrumpido)
     const username = session.user.email.split('@')[0];
     ({ data: p } = await sb.from('profiles').insert({ id: session.user.id, username }).select('id,username').single());
@@ -323,10 +403,13 @@ $('#step-username').addEventListener('submit', async (e) => {
       const { data, error } = await sb.auth.signUp({ email, password: pass });
       if (error) throw new Error(/registered|already/i.test(error.message) ? 'Ese nombre de usuario ya está cogido.' : error.message);
       if (!data.session) throw new Error('Desactiva "Confirm email" en Supabase → Authentication → Providers → Email.');
-      const { error: e2 } = await sb.from('profiles').insert({ id: data.user.id, username: name });
-      if (e2) throw new Error(e2.message);
+      let { error: e2 } = await sb.from('profiles').insert({ id: data.user.id, username: name, login_email: email });
+      if (e2 && /login_email/.test(e2.message)) ({ error: e2 } = await sb.from('profiles').insert({ id: data.user.id, username: name }));
+      if (e2) throw new Error(/duplicate|unique/i.test(e2.message) ? 'Ese nombre de usuario ya está cogido.' : e2.message);
     } else {
-      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+      let loginEmail = email;
+      try { const { data: le } = await sb.rpc('get_login_email', { uname: name }); if (le) loginEmail = le; } catch (_) {}
+      const { error } = await sb.auth.signInWithPassword({ email: loginEmail, password: pass });
       if (error) throw new Error('Usuario o contraseña incorrectos.');
     }
     await loadMe();
@@ -341,7 +424,8 @@ $('#step-username').addEventListener('submit', async (e) => {
 $('#btn-logout').addEventListener('click', async () => {
   if (channel) { sb.removeChannel(channel); channel = null; }
   await sb.auth.signOut();
-  me = null; active = null; peers = {}; cache = {}; unread.clear();
+  me = null; active = null; peers = {}; avatars = {}; cache = {}; unread.clear();
+  closeSettings();
   $('#shell').hidden = true;
   $('#shell').classList.remove('chat-open');
   $('#conv').hidden = true;
@@ -354,13 +438,19 @@ $('#btn-logout').addEventListener('click', async () => {
 });
 
 /* ---------- 3. Datos ---------- */
+async function fetchProfiles(filter) {
+  let r = await filter(sb.from('profiles').select('id,username,avatar'));
+  if (r.error) r = await filter(sb.from('profiles').select('id,username')); // por si aún no existe la columna avatar
+  return r.data || [];
+}
+
 async function loadContacts() {
   const { data } = await sb.from('contacts').select('user_id,friend_id');
   const ids = [...new Set((data || []).map((r) => (r.user_id === me.id ? r.friend_id : r.user_id)))];
-  peers = {};
+  peers = {}; avatars = {};
   if (ids.length) {
-    const { data: ps } = await sb.from('profiles').select('id,username').in('id', ids);
-    (ps || []).forEach((p) => { peers[p.id] = p.username; });
+    const ps = await fetchProfiles((q) => q.in('id', ids));
+    ps.forEach((p) => { peers[p.id] = p.username; avatars[p.id] = p.avatar || null; });
   }
 }
 
@@ -389,6 +479,15 @@ function subscribe() {
       else if (m.sender_id !== me.id) unread.add(pid);
       renderContacts();
     })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, ({ new: p }) => {
+      if (!peers[p.id]) return;
+      peers[p.id] = p.username; avatars[p.id] = p.avatar || null;
+      if (p.id === active) {
+        $('#peer-name').textContent = p.username;
+        $('#peer-avatar').outerHTML = avatar(p.username, p.avatar, 'peer-avatar');
+      }
+      renderContacts();
+    })
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contacts' }, async () => {
       await loadContacts();
       renderContacts();
@@ -400,15 +499,24 @@ async function openShell() {
   if (!me) return;
   $('#auth').hidden = true;
   $('#shell').hidden = false;
-  $('#me-name').textContent = me.username;
+  syncSettings();
   await Promise.all([loadContacts(), loadMessages()]);
   renderContacts();
   subscribe();
 }
 
 /* ---------- 4. Interfaz ---------- */
-function avatar(name) {
-  return `<div class="avatar" style="background:${colorOf(name)}">${esc(name[0])}</div>`;
+const AV_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+const hasPhoto = (u) => !!u && AV_RE.test(u);
+function avatarStyle(name, url) {
+  return hasPhoto(url) ? `background:url('${url}') center/cover` : `background:${colorOf(name)}`;
+}
+function avatar(name, url, id) {
+  return `<div class="avatar"${id ? ` id="${id}"` : ''} style="${avatarStyle(name, url)}">${hasPhoto(url) ? '' : esc(name[0])}</div>`;
+}
+function paint(el, name, url) {
+  el.style.cssText = avatarStyle(name, url);
+  el.textContent = hasPhoto(url) ? '' : name[0];
 }
 
 function renderContacts() {
@@ -425,7 +533,7 @@ function renderContacts() {
   ul.innerHTML = list.map(([id, n]) => {
     const last = (cache[id] || []).slice(-1)[0];
     return `<li data-id="${id}" class="${id === active ? 'active' : ''}">
-      ${avatar(n)}<div class="info"><b>${esc(n)}</b><span>${last ? esc(last.text) : 'Di hola 👋'}</span></div>
+      ${avatar(n, avatars[id])}<div class="info"><b>${esc(n)}${n === SUPPORT_USER ? ' <em class="tag-s">Soporte</em>' : ''}</b><span>${last ? esc(last.text) : 'Di hola 👋'}</span></div>
       ${unread.has(id) ? '<i class="badge"></i>' : ''}</li>`;
   }).join('');
 }
@@ -451,12 +559,12 @@ $('#add-form').addEventListener('submit', async (e) => {
   if (name === me.username) { err.textContent = 'No puedes añadirte a ti mismo.'; return; }
   if (Object.values(peers).includes(name)) { err.textContent = 'Ya lo tienes en tus chats.'; return; }
 
-  const { data: p } = await sb.from('profiles').select('id,username').eq('username', name).maybeSingle();
+  const [p] = await fetchProfiles((q) => q.eq('username', name).limit(1));
   if (!p) { err.textContent = 'No existe ningún usuario con ese nombre exacto.'; return; }
   const { error } = await sb.from('contacts').insert({ friend_id: p.id });
   if (error && error.code !== '23505') { err.textContent = 'No se pudo añadir. Inténtalo de nuevo.'; return; }
 
-  peers[p.id] = p.username;
+  peers[p.id] = p.username; avatars[p.id] = p.avatar || null;
   $('#add-input').value = '';
   $('#add-form').hidden = true;
   renderContacts();
@@ -469,7 +577,7 @@ function openChat(id) {
   $('#empty').hidden = true;
   $('#conv').hidden = false;
   $('#peer-name').textContent = peers[id];
-  $('#peer-avatar').outerHTML = `<div class="avatar" id="peer-avatar" style="background:${colorOf(peers[id])}">${esc(peers[id][0])}</div>`;
+  $('#peer-avatar').outerHTML = avatar(peers[id], avatars[id], 'peer-avatar');
   $('#shell').classList.add('chat-open');
   renderMessages();
   renderContacts();
@@ -484,7 +592,7 @@ $('#btn-back').addEventListener('click', () => {
 
 function bubbleHTML(m) {
   const t = new Date(m.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-  return `<div class="bubble ${m.sender_id === me.id ? 'me' : 'them'}">${esc(m.text)}<small>${t}</small></div>`;
+  return `<div class="bubble ${m.sender_id === me.id ? 'out' : 'in'}">${esc(m.text)}<small>${t}</small></div>`;
 }
 function scrollDown() {
   const box = $('#messages');
@@ -512,6 +620,123 @@ $('#composer').addEventListener('submit', async (e) => {
   if (error) { input.value = text; return; }
   if (addToCache(data)) appendMessage(data);
   renderContacts();
+});
+
+/* ---------- 5. Ajustes ---------- */
+const settings = $('#settings');
+function openSettings() {
+  if (!me) return;
+  syncSettings();
+  ['avatar-error', 'name-error', 'support-error'].forEach((i) => { $('#' + i).textContent = ''; });
+  settings.classList.add('open');
+  settings.setAttribute('aria-hidden', 'false');
+}
+function closeSettings() {
+  settings.classList.remove('open');
+  settings.setAttribute('aria-hidden', 'true');
+}
+function syncSettings() {
+  if (!me) return;
+  paint($('#me-avatar'), me.username, me.avatar);
+  paint($('#set-avatar'), me.username, me.avatar);
+  $('#me-name').textContent = me.username;
+  $('#set-name-label').textContent = me.username;
+  $('#name-input').value = me.username;
+  const locked = me.username === SUPPORT_USER; // la cuenta de soporte no puede cambiar de nombre
+  $('#name-input').disabled = locked;
+  $('#name-form button').disabled = locked;
+  $('#avatar-remove').hidden = !hasPhoto(me.avatar);
+}
+$('#btn-settings').addEventListener('click', openSettings);
+$('#me-avatar').addEventListener('click', openSettings);
+$('#settings-close').addEventListener('click', closeSettings);
+settings.addEventListener('click', (e) => { if (e.target === settings) closeSettings(); });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSettings(); });
+
+/* Tema claro / oscuro */
+const currentTheme = () => document.documentElement.dataset.theme || 'dark';
+function setTheme(t, save = true) {
+  document.documentElement.dataset.theme = t;
+  $('#theme-seg').dataset.v = t;
+  document.querySelectorAll('#theme-seg button').forEach((b) => b.classList.toggle('on', b.dataset.theme === t));
+  if (save) { try { localStorage.setItem('chat.theme', t); } catch (_) {} }
+}
+document.querySelectorAll('#theme-seg button').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.theme)));
+setTheme(currentTheme(), false);
+
+/* Foto de perfil */
+function resizeImage(file, size) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    const src = URL.createObjectURL(file);
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, size, size);
+      const s = Math.min(img.width, img.height);
+      ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+      URL.revokeObjectURL(src);
+      res(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => { URL.revokeObjectURL(src); rej(new Error('No se pudo leer la imagen.')); };
+    img.src = src;
+  });
+}
+const SQL_HINT = 'No se pudo guardar. Falta ejecutar el SQL de ajustes en Supabase.';
+async function saveAvatar(url) {
+  const { data, error } = await sb.from('profiles').update({ avatar: url }).eq('id', me.id).select('id');
+  if (error) throw new Error(/avatar|column/i.test(error.message) ? SQL_HINT : error.message);
+  if (!data || !data.length) throw new Error(SQL_HINT);
+  me.avatar = url;
+  syncSettings();
+}
+$('#set-av-wrap').addEventListener('click', () => $('#avatar-file').click());
+$('#avatar-file').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  const err = $('#avatar-error');
+  err.textContent = '';
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { err.textContent = 'Elige una imagen.'; return; }
+  try { await saveAvatar(await resizeImage(file, 160)); } catch (ex) { err.textContent = ex.message; }
+});
+$('#avatar-remove').addEventListener('click', async () => {
+  try { await saveAvatar(null); } catch (ex) { $('#avatar-error').textContent = ex.message; }
+});
+
+/* Cambiar nombre */
+$('#name-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = $('#name-error');
+  err.textContent = '';
+  const name = $('#name-input').value.trim().toLowerCase();
+  if (name === me.username) return;
+  if (!validName(name)) { err.textContent = 'Usa 3-16 caracteres: letras, números o _'; return; }
+  const { data, error } = await sb.from('profiles').update({ username: name }).eq('id', me.id).select('id');
+  if (error) { err.textContent = error.code === '23505' ? 'Ese nombre ya está cogido.' : error.message; return; }
+  if (!data || !data.length) { err.textContent = SQL_HINT; return; }
+  me.username = name;
+  syncSettings();
+});
+
+/* Soporte: siempre la cuenta SUPPORT_USER */
+$('#btn-support').addEventListener('click', async () => {
+  const err = $('#support-error');
+  err.textContent = '';
+  if (me.username === SUPPORT_USER) { err.textContent = 'Tú eres la cuenta de soporte.'; return; }
+  let id = Object.keys(peers).find((k) => peers[k] === SUPPORT_USER);
+  if (!id) {
+    const [p] = await fetchProfiles((q) => q.eq('username', SUPPORT_USER).limit(1));
+    if (!p) { err.textContent = 'La cuenta de soporte no está disponible.'; return; }
+    const { error } = await sb.from('contacts').insert({ friend_id: p.id });
+    if (error && error.code !== '23505') { err.textContent = 'No se pudo abrir el soporte. Inténtalo de nuevo.'; return; }
+    id = p.id; peers[id] = p.username; avatars[id] = p.avatar || null;
+  }
+  closeSettings();
+  renderContacts();
+  openChat(id);
 });
 
 /* ---------- Arranque ---------- */
