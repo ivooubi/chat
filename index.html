@@ -11,12 +11,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="chat.">
-<script>try{var t=localStorage.getItem("chat.theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script>try{var t=localStorage.getItem("chat.theme");if(t)document.documentElement.dataset.theme=t;var a=localStorage.getItem("chat.accent");if(a)document.documentElement.dataset.accent=a}catch(e){}</script>
 <style>
 :root{
   --bg:#050507; --panel:#0e0e12; --panel2:#15151b; --line:#23232c;
-  --text:#f2f2f7; --muted:#8e8e99; --accent:#5b4cf0; --accent2:#8a7bff; --green:#30d158; --red:#ff453a;
-  --ease:cubic-bezier(.22,1,.36,1); --glass:rgba(14,14,18,.7); --glow:#1a1740; --thumb:#2a2a35;
+  --text:#f2f2f7; --muted:#8e8e99; --accent:#5b4cf0; --accent2:#8a7bff; --accent-rgb:91,76,240; --green:#30d158; --red:#ff453a;
+  --ease:cubic-bezier(.22,1,.36,1); --glass:rgba(14,14,18,.7); --glow:color-mix(in srgb,var(--accent) 20%,#050507); --thumb:#2a2a35;
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",Roboto,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -51,11 +51,12 @@ button{cursor:pointer;border:0;background:none}
 @keyframes pop{from{opacity:0;transform:translateY(18px) scale(.97)}}
 .card h2{font-size:24px;letter-spacing:-.02em}
 .muted{color:var(--muted);font-size:14px;line-height:1.4}
-.logo-badge{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-weight:700;font-size:26px;box-shadow:0 8px 30px rgba(91,76,240,.45)}
+.logo-badge{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-weight:700;font-size:26px;box-shadow:0 8px 30px rgba(var(--accent-rgb),.45)}
+.logo-ico{display:block;width:62%;height:62%;fill:#fff}
 .logo-badge.small{width:38px;height:38px;border-radius:12px;font-size:18px;box-shadow:none;flex:none}
 
 .field{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 16px;outline:none;font-size:15px;transition:border-color .2s,box-shadow .2s}
-.field:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(91,76,240,.2)}
+.field:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.2)}
 .error{color:var(--red);font-size:13px;min-height:0}
 .error:empty{display:none}
 .btn{border-radius:14px;padding:13px 22px;font-weight:600;font-size:15px;width:100%;transition:transform .2s var(--ease),filter .2s}
@@ -77,8 +78,8 @@ button{cursor:pointer;border:0;background:none}
 .search{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:0 12px;color:var(--muted)}
 .search input{flex:1;background:none;border:0;outline:0;padding:10px 0;font-size:14px;color:var(--text)}
 .side-title{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em;padding:0 6px}
-.chip{background:rgba(91,76,240,.15);color:var(--accent2);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;transition:background .2s,transform .2s}
-.chip:hover{background:rgba(91,76,240,.28)}
+.chip{background:rgba(var(--accent-rgb),.15);color:var(--accent2);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;transition:background .2s,transform .2s}
+.chip:hover{background:rgba(var(--accent-rgb),.28)}
 .chip:active{transform:scale(.94)}
 .add-form{display:flex;gap:8px;flex-wrap:wrap;animation:pop .4s var(--ease)}
 .add-form .field{flex:1;min-width:0;padding:10px 14px}
@@ -88,7 +89,7 @@ button{cursor:pointer;border:0;background:none}
 #contacts li{display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;cursor:pointer;transition:background .2s,transform .2s var(--ease);animation:pop .5s var(--ease) backwards}
 #contacts li:hover{background:var(--panel2)}
 #contacts li:active{transform:scale(.97)}
-#contacts li.active{background:rgba(91,76,240,.18)}
+#contacts li.active{background:rgba(var(--accent-rgb),.18)}
 #contacts .info{min-width:0;flex:1;display:flex;flex-direction:column}
 #contacts .info b{font-size:15px;font-weight:600}
 #contacts .info span{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -115,7 +116,7 @@ button{cursor:pointer;border:0;background:none}
 
 #composer{display:flex;gap:10px;padding:14px 18px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--glass)}
 #composer input{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:12px 18px;outline:0;font-size:15px;transition:border-color .2s,box-shadow .2s}
-#composer input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(91,76,240,.2)}
+#composer input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.2)}
 .send{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;transition:transform .2s var(--ease)}
 .send:hover{transform:scale(1.08)}
 .send:active{transform:scale(.9)}
@@ -135,8 +136,12 @@ button{cursor:pointer;border:0;background:none}
 .link{color:var(--accent2);font-size:13px}
 .badge{width:10px;height:10px;border-radius:50%;background:var(--accent2);flex:none;box-shadow:0 0 8px var(--accent)}
 
-:root[data-theme=light]{--bg:#f5f5fa;--panel:#ffffff;--panel2:#ececf3;--line:#e0e0e8;--text:#111114;--muted:#6e6e78;--glass:rgba(255,255,255,.78);--glow:#d9d4ff;--thumb:#c9c9d3;color-scheme:light}
+:root[data-theme=light]{--bg:#f5f5fa;--panel:#ffffff;--panel2:#ececf3;--line:#e0e0e8;--text:#111114;--muted:#6e6e78;--glass:rgba(255,255,255,.78);--glow:color-mix(in srgb,var(--accent) 28%,#fff);--thumb:#c9c9d3;color-scheme:light}
 :root[data-theme=dark]{color-scheme:dark}
+:root[data-accent=blue]{--accent:#0a84ff;--accent2:#5ac8fa;--accent-rgb:10,132,255}
+:root[data-accent=green]{--accent:#0e9f6e;--accent2:#34d399;--accent-rgb:14,159,110}
+:root[data-accent=rose]{--accent:#e5336b;--accent2:#ff6b9a;--accent-rgb:229,51,107}
+:root[data-accent=orange]{--accent:#ee5a12;--accent2:#ff9640;--accent-rgb:238,90,18}
 body{transition:background .4s,color .4s}
 .tag-s{font-style:normal;font-size:10px;background:rgba(48,209,88,.15);color:var(--green);padding:1px 6px;border-radius:5px;margin-left:4px;font-weight:600;vertical-align:middle}
 #me-avatar{cursor:pointer;width:38px;height:38px;font-size:15px;transition:transform .2s var(--ease)}
@@ -205,12 +210,14 @@ body{transition:background .4s,color .4s}
 
 /* Visto */
 .bubble.out small{display:flex;justify-content:flex-end;align-items:center;gap:5px;opacity:1;color:rgba(255,255,255,.72)}
-.ticks{display:inline-flex;width:17px;height:11px;transition:color .4s}
+.ticks{display:inline-flex;width:16px;height:16px;margin:-2px -1px -2px 0;color:rgba(255,255,255,.78);transition:color .3s}
 .ticks svg{width:100%;height:100%;overflow:visible}
-.ticks path{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.ticks .t2{stroke-dasharray:14;stroke-dashoffset:14;transition:stroke-dashoffset .5s var(--ease) .05s}
-.ticks.read{color:#8ee9ff}
-.ticks.read .t2{stroke-dashoffset:0}
+.ticks .ring{fill:none;stroke:currentColor;stroke-width:1.4}
+.ticks .fill{fill:#fff;transform:scale(0);transform-box:fill-box;transform-origin:center;transition:transform .5s var(--ease)}
+.ticks .ck{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:stroke .35s .1s}
+.ticks.read{color:#fff}
+.ticks.read .fill{transform:scale(1)}
+.ticks.read .ck{stroke:var(--accent)}
 
 /* Interruptor minimalista */
 .opt{display:flex;align-items:center;gap:16px;padding:13px 0}
@@ -226,12 +233,23 @@ body{transition:background .4s,color .4s}
 .switch[aria-checked=true]::after{transform:translateX(20px)}
 .switch:active::after{width:27px}
 .switch[aria-checked=true]:active::after{transform:translateX(15px)}
-.switch:focus-visible{box-shadow:0 0 0 4px rgba(91,76,240,.3)}
+.switch:focus-visible{box-shadow:0 0 0 4px rgba(var(--accent-rgb),.3)}
 .switch:disabled{opacity:.45;cursor:default}
 .switch:disabled:active::after{width:22px}
+
+/* Color de acento */
+.swatches{display:flex;gap:16px;padding:6px 4px 4px}
+.sw{position:relative;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--a),var(--b));transition:transform .4s var(--ease),box-shadow .4s var(--ease);outline:none}
+.sw::after{content:"";position:absolute;left:50%;top:50%;width:11px;height:6px;border-left:2.4px solid #fff;border-bottom:2.4px solid #fff;transform:translate(-50%,-65%) rotate(-45deg) scale(0);transition:transform .4s var(--ease)}
+.sw[aria-checked=true]{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--a)}
+.sw[aria-checked=true]::after{transform:translate(-50%,-65%) rotate(-45deg) scale(1)}
+.sw:hover{transform:scale(1.1)}
+.sw:active{transform:scale(.9)}
+.sw:focus-visible{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--text)}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="logo" viewBox="0 0 100 100"><path fill-rule="evenodd" d="M45.29 93.03 42.75 93.14 40.22 93.07 36.96 92.74 33.88 92.21 29.89 91.11 27.9 90.4 25.18 89.25 21.01 87.1 2.17 92.35 0.18 92.83 -0.05 92.66 0.63 90.13 6.19 72.55 6.11 72.19 4.66 69.66 3.59 67.48 1.91 63.13 0.66 58.24 0.26 55.71 -0.07 52.26 -0.05 47.19 0.62 41.94 1.19 39.4 2.08 36.32 3.74 32.16 6.27 27.45 7.71 25.27 10.1 22.19 12.06 20.02 13.95 18.16 17.03 15.59 19.02 14.15 21.01 12.89 23.91 11.28 26.45 10.12 29.71 8.92 32.43 8.15 35.69 7.44 40.94 6.92 45.65 7.02 49.09 7.42 53.26 8.37 57.97 9.98 61.78 11.78 64.86 13.57 67.75 15.6 71.38 18.72 74.2 21.65 76.93 25.09 79.03 28.35 81.22 32.7 82.69 36.5 83.77 40.49 84.48 44.47 84.78 48.1 84.81 51 84.77 51.54 84.6 51.83 81.7 51.93 72.83 51.85 72.67 51.54 72.67 48.64 72.46 46.47 71.56 41.88 70.5 38.68 69.38 36.21 67.6 33.06 66.7 31.79 64.67 29.3 63.04 27.62 61.41 26.15 59.02 24.37 56.69 22.92 54.53 21.81 52.34 20.92 49.46 20 47.64 19.59 45.29 19.26 41.3 19.13 37.79 19.47 35.92 19.84 33.51 20.54 31.37 21.29 29.77 22.01 26.27 23.98 23.02 26.36 19.91 29.44 18.28 31.43 17.03 33.24 14.65 37.59 13.17 41.76 12.29 46.11 12.05 49 12.1 51.9 12.31 54.08 13.04 57.7 13.56 59.51 14.66 62.41 16.12 65.26 17.44 67.48 17.11 68.93 14.29 77.99 14.13 78.94 14.67 78.91 25.54 75.64 25.91 75.72 28.26 77.09 30.77 78.35 34.24 79.64 38.01 80.53 41.49 80.88 45.29 80.73 49.28 80 53.08 78.75 56.88 77 73.73 77.01 74.28 77.05 74.43 77.26 71.5 80.71 68.12 83.81 64.86 86.26 61.96 88.04 59.06 89.53 56.16 90.72 53.8 91.48 50.18 92.39ZM78.62 81.7 78.26 81.79 78.15 81.43 81.34 72.76 81.33 72.37 40.94 72.26 38.59 71.95 36.96 71.59 33.7 70.44 30.8 68.85 28.08 66.82 26.5 65.31 25.4 64.04 23.82 61.87 22.88 60.24 21.99 58.24 21.3 56.25 20.9 54.62 20.52 52.08 20.46 50.27 20.56 47.74 21.07 44.66 21.64 42.66 22.41 40.67 23.27 39.04 24.03 37.77 26.06 35.05 27.48 33.61 28.8 32.47 31.16 30.78 34.24 29.22 37.86 28.08 40.76 27.67 44.75 27.72 47.83 28.29 50.91 29.35 53.44 30.65 55.25 31.89 57.51 33.79 59.2 35.6 60.63 37.59 62.08 40.13 62.97 42.3 63.67 44.66 64.08 46.83 64.31 49.37 64.25 51.9 63.88 54.44 63.35 56.61 62.6 58.79 60.99 61.87 59.78 63.68 59.94 63.86 81.34 63.81 81.34 63.43 78.02 54.98 78.05 54.62 78.26 54.56 85.14 58.7 99.46 67.57 100.01 68.03 99.87 68.39 99.46 68.67Z"/></symbol></svg>
 <div id="stage">
 
   <!-- PANTALLA 1: intro -->
@@ -248,7 +266,7 @@ body{transition:background .4s,color .4s}
     <!-- Autenticación -->
     <div id="auth">
       <div class="card step active" id="step-welcome">
-        <div class="logo-badge">#</div>
+        <div class="logo-badge"><svg class="logo-ico" aria-hidden="true"><use href="#logo"/></svg></div>
         <h2>Bienvenido a chat.</h2>
         <p class="muted">Habla con tus amigos en un espacio simple y privado.</p>
         <button class="btn primary" id="btn-start">Iniciar chat</button>
@@ -313,7 +331,7 @@ body{transition:background .4s,color .4s}
 
       <main id="chat">
         <div class="empty" id="empty">
-          <div class="logo-badge">#</div>
+          <div class="logo-badge"><svg class="logo-ico" aria-hidden="true"><use href="#logo"/></svg></div>
           <h3>Selecciona un chat</h3>
           <p class="muted">O añade a un amigo con su nombre de usuario exacto.</p>
         </div>
@@ -405,6 +423,15 @@ body{transition:background .4s,color .4s}
         <i class="seg-pill"></i>
         <button type="button" data-theme="light">Claro</button>
         <button type="button" data-theme="dark">Oscuro</button>
+      </div>
+
+      <label class="set-label">Color de acento</label>
+      <div class="swatches" id="accent-sw" role="radiogroup" aria-label="Color de acento">
+        <button class="sw" type="button" role="radio" aria-checked="true" data-accent="violet" title="Violeta" aria-label="Violeta" style="--a:#5b4cf0;--b:#8a7bff"></button>
+        <button class="sw" type="button" role="radio" aria-checked="false" data-accent="blue" title="Azul" aria-label="Azul" style="--a:#0a84ff;--b:#5ac8fa"></button>
+        <button class="sw" type="button" role="radio" aria-checked="false" data-accent="green" title="Verde" aria-label="Verde" style="--a:#0e9f6e;--b:#34d399"></button>
+        <button class="sw" type="button" role="radio" aria-checked="false" data-accent="rose" title="Rosa" aria-label="Rosa" style="--a:#e5336b;--b:#ff6b9a"></button>
+        <button class="sw" type="button" role="radio" aria-checked="false" data-accent="orange" title="Naranja" aria-label="Naranja" style="--a:#ee5a12;--b:#ff9640"></button>
       </div>
 
       <label class="set-label">Privacidad</label>
@@ -766,7 +793,7 @@ $('#btn-back').addEventListener('click', () => {
   renderContacts();
 });
 
-const TICKS = '<span class="ticks" title="Enviado"><svg viewBox="0 0 17 11"><path d="M1 6l3.5 3.5L11 1.5"/><path class="t2" d="M6.5 9.5l.2.2L13 1.5"/></svg></span>';
+const TICKS = '<span class="ticks" title="Enviado"><svg viewBox="0 0 16 16"><circle class="fill" cx="8" cy="8" r="7"/><circle class="ring" cx="8" cy="8" r="6.6"/><path class="ck" d="M4.9 8.3l2.2 2.2 4-4.4"/></svg></span>';
 function setRead(el, at) {
   el.classList.add('read');
   el.title = 'Visto ' + new Date(at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
@@ -864,6 +891,18 @@ function setTheme(t, save = true) {
 }
 document.querySelectorAll('#theme-seg button').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.theme)));
 setTheme(currentTheme(), false);
+
+/* Color de acento (cambia botones, interruptores y el degradado de las burbujas) */
+const ACCENTS = ['violet', 'blue', 'green', 'rose', 'orange'];
+function setAccent(a, save = true) {
+  if (!ACCENTS.includes(a)) a = 'violet';
+  if (a === 'violet') delete document.documentElement.dataset.accent;
+  else document.documentElement.dataset.accent = a;
+  document.querySelectorAll('#accent-sw .sw').forEach((b) => b.setAttribute('aria-checked', b.dataset.accent === a));
+  if (save) { try { localStorage.setItem('chat.accent', a); } catch (_) {} }
+}
+document.querySelectorAll('#accent-sw .sw').forEach((b) => b.addEventListener('click', () => setAccent(b.dataset.accent)));
+setAccent(document.documentElement.dataset.accent || 'violet', false);
 
 
 /* Privacidad: interruptores */
