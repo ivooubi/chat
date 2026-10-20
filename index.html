@@ -294,6 +294,63 @@ body{transition:background .4s,color .4s}
 .lb-bar{position:fixed;top:calc(14px + env(safe-area-inset-top));right:14px;display:flex;gap:8px}
 .lb .icon-btn{background:rgba(255,255,255,.14);color:#fff;width:40px;height:40px;border-radius:50%}
 .lb .icon-btn:hover{background:rgba(255,255,255,.26)}
+
+/* Chat sin leer: tinte suave + nombre y vista previa más marcados */
+#contacts li.unread{background:rgba(var(--accent-rgb),.07)}
+#contacts li.unread:hover{background:rgba(var(--accent-rgb),.12)}
+#contacts li.unread .info b{font-weight:700}
+#contacts li.unread .info span{color:var(--text);font-weight:500}
+
+/* Menú de chat (tres puntos) */
+.more{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:var(--muted);opacity:.55;transition:opacity .2s,background .2s,color .2s}
+#contacts li:hover .more,.more.open{opacity:1}
+.more:hover,.more.open{background:var(--panel);color:var(--text)}
+@media(hover:none){.more{opacity:.8}}
+.pin-ico{display:inline-block;vertical-align:-1px;margin-left:6px;color:var(--muted)}
+.menu{position:fixed;z-index:80;width:200px;padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.45);opacity:0;transform:scale(.94) translateY(-4px);transform-origin:top right;transition:opacity .2s var(--ease),transform .3s var(--ease);pointer-events:none}
+.menu.open{opacity:1;transform:none;pointer-events:auto}
+.menu button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:500;text-align:left;transition:background .15s}
+.menu button:hover{background:var(--panel2)}
+.menu button.danger{color:var(--red)}
+.menu svg{flex:none;opacity:.85}
+.btn:disabled{opacity:.5;pointer-events:none}
+
+/* Chat bloqueado */
+.blocked-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--glass)}
+.blocked-bar span{color:var(--muted);font-size:14px}
+
+/* Aviso flotante */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));z-index:120;transform:translate(-50%,20px);opacity:0;padding:11px 18px;border-radius:999px;background:var(--panel);border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.4);font-size:14px;pointer-events:none;max-width:90vw;text-align:center;transition:opacity .3s,transform .5s var(--ease)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* Denunciar: elegir mensajes */
+.rp-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;margin-top:12px}
+.rp-item{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:14px;background:var(--panel2);border:1px solid var(--line);cursor:pointer;transition:border-color .2s,background .2s}
+.rp-item.sel{border-color:var(--accent);background:rgba(var(--accent-rgb),.12)}
+.rp-chk{flex:none;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--muted);display:grid;place-items:center;margin-top:1px;transition:background .25s var(--ease),border-color .25s}
+.rp-chk::after{content:"";width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translateY(-1px) rotate(-45deg) scale(0);transition:transform .3s var(--ease)}
+.rp-item.sel .rp-chk{background:var(--accent);border-color:var(--accent)}
+.rp-item.sel .rp-chk::after{transform:translateY(-1px) rotate(-45deg) scale(1)}
+.rp-txt{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.rp-txt small{color:var(--muted);font-size:11.5px}
+.rp-txt span{font-size:14px;line-height:1.35;word-break:break-word}
+.rp-count{color:var(--muted);font-size:13px}
+
+/* Admin: pestañas y denuncias */
+#adm-tabs{margin-top:6px}
+.seg[data-v=reports] .seg-pill{transform:translateX(100%)}
+.cnt{display:inline-block;margin-left:6px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-style:normal;padding:1px 6px}
+#btn-admin{position:relative}
+#btn-admin.alert::after{content:"";position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--panel)}
+#rep-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:12px}
+#rep-list li{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:12px}
+#rep-list li.done{opacity:.6}
+.rep-reason{margin:10px 0 0;font-size:13px;color:var(--muted)}
+.rep-msgs{display:flex;flex-direction:column;gap:5px;margin-top:10px;max-height:200px;overflow-y:auto}
+.rep-msg{padding:8px 11px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-size:13.5px;line-height:1.35;word-break:break-word}
+.rep-msg.bad{border-color:rgba(255,69,58,.4)}
+.rep-msg small{display:block;color:var(--muted);font-size:11px;margin-bottom:2px}
+.rep-actions{display:flex;gap:6px;flex:none}
 </style>
 </head>
 <body>
@@ -408,6 +465,10 @@ body{transition:background .4s,color .4s}
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
             </button>
           </form>
+          <div class="blocked-bar" id="blocked-bar" hidden>
+            <span>Has bloqueado a este usuario.</span>
+            <button class="btn primary sm" id="btn-unblock" type="button">Desbloquear</button>
+          </div>
         </div>
       </main>
     </div>
@@ -429,13 +490,24 @@ body{transition:background .4s,color .4s}
       <button class="icon-btn" id="admin-close" title="Cerrar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="sheet-body">
-      <p class="muted" id="adm-summary"></p>
-      <div class="search adm-search">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="adm-search" placeholder="Buscar cuenta" spellcheck="false" autocomplete="off">
+      <div class="seg" id="adm-tabs" data-v="accounts">
+        <i class="seg-pill"></i>
+        <button type="button" class="on" data-tab="accounts">Cuentas</button>
+        <button type="button" data-tab="reports">Denuncias<i class="cnt" id="rep-count" hidden></i></button>
       </div>
       <p class="error" id="adm-error"></p>
-      <ul id="adm-list"></ul>
+      <div id="adm-accounts">
+        <p class="muted" id="adm-summary"></p>
+        <div class="search adm-search">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="adm-search" placeholder="Buscar cuenta" spellcheck="false" autocomplete="off">
+        </div>
+        <ul id="adm-list"></ul>
+      </div>
+      <div id="adm-reports" hidden>
+        <p class="muted" id="rep-summary" style="margin-top:12px"></p>
+        <ul id="rep-list"></ul>
+      </div>
     </div>
   </div>
 </div>
@@ -533,6 +605,29 @@ body{transition:background .4s,color .4s}
   </div>
 </div>
 
+<div id="menu" class="menu" role="menu"></div>
+<div id="toast" class="toast" role="status"></div>
+
+<div id="report" class="overlay" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-label="Denunciar">
+    <div class="sheet-head">
+      <h3 id="rp-title">Denunciar</h3>
+      <button class="icon-btn" id="rp-close" title="Cerrar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <p class="muted">Selecciona los mensajes que quieres enviar al equipo de soporte como prueba.</p>
+      <div class="rp-list" id="rp-list"></div>
+      <label class="set-label" for="rp-reason">Motivo (opcional)</label>
+      <input id="rp-reason" class="field" maxlength="200" placeholder="Acoso, spam, contenido inapropiado…" autocomplete="off">
+      <p class="error" id="rp-error"></p>
+      <div class="row" style="margin-top:14px;align-items:center;justify-content:space-between">
+        <span class="rp-count" id="rp-count"></span>
+        <button class="btn primary sm" id="rp-send" type="button">Enviar denuncia</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ===== chat. — conectado a Supabase ===== */
@@ -558,6 +653,8 @@ let online = new Set(); // ids conectados ahora mismo (Realtime Presence)
 let lastSeen = {};      // id -> última vez en línea (ISO)
 let peerShow = {};      // id -> si ese usuario comparte su estado
 let presence = null, presTimer = null, token = null;
+let pinned = new Set();  // chats fijados arriba
+let blocked = new Set(); // usuarios que yo he bloqueado
 let pendingChat = new URLSearchParams(location.search).get('chat'); // chat a abrir al pulsar una notificación
 const SUPPORT_USER = 'admin.';
 const VERIFIED = [SUPPORT_USER];
@@ -656,7 +753,9 @@ $('#btn-logout').addEventListener('click', async () => {
   try { await pushRemove(); } catch (_) {}
   await sb.auth.signOut();
   me = null; active = null; peers = {}; avatars = {}; cache = {}; unread.clear(); lastSeen = {}; peerShow = {};
-  closeSettings(); closeAdmin(); hideBan(); clearStaged();
+  pinned.clear(); blocked.clear();
+  closeSettings(); closeAdmin(); hideBan(); clearStaged(); closeReport(); closeMenu();
+  $('#btn-admin').classList.remove('alert');
   $('#shell').hidden = true;
   $('#shell').classList.remove('chat-open');
   $('#conv').hidden = true;
@@ -701,6 +800,12 @@ async function loadMessages() {
   const { data } = await sb.from('messages').select('*').order('created_at').limit(1000);
   cache = {};
   (data || []).forEach(addToCache);
+  // chats con mensajes recibidos sin leer (solo fiable si la confirmación de lectura está activa)
+  if (me.show_read) {
+    for (const [pid, list] of Object.entries(cache)) {
+      if (list.some((m) => m.sender_id === pid && !m.read_at)) unread.add(pid);
+    }
+  }
 }
 
 function subscribe() {
@@ -741,6 +846,12 @@ function subscribe() {
       }
       renderContacts();
     })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reports' }, () => {
+      if (!me || me.username !== SUPPORT_USER) return;
+      toast('Nueva denuncia recibida');
+      refreshReportBadge();
+      if (adminEl.classList.contains('open')) loadReports();
+    })
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contacts' }, async () => {
       await loadContacts();
       renderContacts();
@@ -756,10 +867,11 @@ async function openShell() {
   $('#auth').hidden = true;
   $('#shell').hidden = false;
   syncSettings();
-  await Promise.all([loadContacts(), loadMessages()]);
+  await Promise.all([loadContacts(), loadMessages(), loadFlags()]);
   renderContacts();
   subscribe();
   startPresence();
+  refreshReportBadge();
   if (notif.on && pushSupported() && Notification.permission === 'granted') pushSave().catch(() => {});
   if (pendingChat && peers[pendingChat]) openChat(pendingChat);
   pendingChat = null;
@@ -784,7 +896,7 @@ function renderContacts() {
   const lastTime = (id) => { const l = cache[id]; return l && l.length ? new Date(l[l.length - 1].created_at).getTime() : 0; };
   const list = Object.entries(peers)
     .filter(([, n]) => n.includes(q))
-    .sort((a, b) => lastTime(b[0]) - lastTime(a[0]));
+    .sort((a, b) => (pinned.has(b[0]) - pinned.has(a[0])) || (lastTime(b[0]) - lastTime(a[0])));
   const ul = $('#contacts');
   if (!list.length) {
     ul.innerHTML = `<li class="no-contacts">${Object.keys(peers).length ? 'Sin resultados' : 'Aún no tienes chats.<br>Pulsa “+ Añadir amigo”.'}</li>`;
@@ -792,14 +904,16 @@ function renderContacts() {
   }
   ul.innerHTML = list.map(([id, n]) => {
     const last = (cache[id] || []).slice(-1)[0];
-    return `<li data-id="${id}" class="${id === active ? 'active' : ''}">
-      <div class="av">${avatar(n, avatars[id])}<i class="status" data-uid="${id}"></i></div><div class="info"><b>${nameHTML(n)}</b><span>${last ? esc(previewText(last)) : 'Di hola 👋'}</span></div>
-      ${unread.has(id) ? '<i class="badge"></i>' : ''}</li>`;
+    return `<li data-id="${id}" class="${id === active ? 'active' : ''}${unread.has(id) ? ' unread' : ''}">
+      <div class="av">${avatar(n, avatars[id])}<i class="status" data-uid="${id}"></i></div><div class="info"><b>${nameHTML(n)}${pinned.has(id) ? PIN_ICO : ''}</b><span>${blocked.has(id) ? 'Bloqueado' : last ? esc(previewText(last)) : 'Di hola 👋'}</span></div>
+      ${unread.has(id) ? '<i class="badge"></i>' : ''}<button class="more" type="button" data-more="${id}" aria-label="Más opciones">${MORE_ICO}</button></li>`;
   }).join('');
   refreshStatus();
 }
 
 $('#contacts').addEventListener('click', (e) => {
+  const more = e.target.closest('.more');
+  if (more) { openMenu(more, more.dataset.more); return; }
   const li = e.target.closest('li[data-id]');
   if (li) openChat(li.dataset.id);
 });
@@ -837,6 +951,7 @@ function openChat(id) {
   if (active !== id) clearStaged();
   active = id;
   unread.delete(id);
+  syncBlocked();
   $('#empty').hidden = true;
   $('#conv').hidden = false;
   $('#peer-name').innerHTML = nameHTML(peers[id]);
@@ -1092,6 +1207,7 @@ async function uploadFile(file) {
 }
 async function sendMsg(to, fields) {
   const { data, error } = await sb.from('messages').insert({ receiver_id: to, ...fields }).select().single();
+  if (error && /blocked_user/.test(error.message)) throw new Error('No se puede enviar el mensaje a este usuario.');
   if (error) throw new Error(/file_|column|schema cache|check/i.test(error.message) ? 'No se pudo enviar. Falta ejecutar el SQL de archivos en Supabase.' : error.message);
   const pid = addToCache(data);
   if (pid && pid === active) appendMessage(data);
@@ -1137,6 +1253,163 @@ $('#composer').addEventListener('submit', async (e) => {
   }
 });
 
+/* ---------- Menú de chat: fijar, bloquear y denunciar ---------- */
+const SVG = (d, s = 17, extra = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"') => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" ${extra}>${d}</svg>`;
+const ICO = {
+  pin: SVG('<path d="M12 17v5M9 3h6l-1 6 3 3v2H7v-2l3-3z"/>'),
+  block: SVG('<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'),
+  flag: SVG('<path d="M4 22V4M4 4h12l-2 4 2 4H4"/>'),
+};
+const MORE_ICO = SVG('<circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/>', 18, 'fill="currentColor"');
+const PIN_ICO = SVG('<path d="M12 17v5M9 3h6l-1 6 3 3v2H7v-2l3-3z"/>', 12, 'class="pin-ico" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"');
+
+let toastT = null;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+async function loadFlags() {
+  const [p, b] = await Promise.all([
+    sb.from('pinned_chats').select('peer_id'),
+    sb.from('blocks').select('blocked_id'),
+  ]);
+  pinned = new Set((p.data || []).map((r) => r.peer_id));
+  blocked = new Set((b.data || []).map((r) => r.blocked_id));
+}
+
+const menu = $('#menu');
+let menuFor = null;
+function closeMenu() {
+  menu.classList.remove('open');
+  document.querySelectorAll('.more.open').forEach((b) => b.classList.remove('open'));
+  menuFor = null;
+}
+function openMenu(btn, id) {
+  if (menuFor === id && menu.classList.contains('open')) return closeMenu();
+  closeMenu();
+  menuFor = id;
+  const isSupport = peers[id] === SUPPORT_USER;
+  const items = [['pin', pinned.has(id) ? 'Quitar de fijados' : 'Fijar arriba', ICO.pin]];
+  if (!isSupport) items.push(['block', blocked.has(id) ? 'Desbloquear' : 'Bloquear', ICO.block], ['report', 'Denunciar', ICO.flag, true]);
+  menu.innerHTML = items.map(([a, l, i, d]) => `<button type="button" role="menuitem" data-a="${a}"${d ? ' class="danger"' : ''}>${i}${l}</button>`).join('');
+  btn.classList.add('open');
+  const r = btn.getBoundingClientRect(), w = 200, h = menu.offsetHeight;
+  menu.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + 'px';
+  menu.style.top = (r.bottom + 6 + h > innerHeight - 8 ? Math.max(8, r.top - h - 6) : r.bottom + 6) + 'px';
+  menu.classList.add('open');
+}
+menu.addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-a]');
+  if (!b) return;
+  const id = menuFor;
+  closeMenu();
+  if (b.dataset.a === 'pin') togglePin(id);
+  else if (b.dataset.a === 'block') toggleBlock(id);
+  else if (b.dataset.a === 'report') openReport(id);
+});
+document.addEventListener('click', (e) => { if (!e.target.closest('#menu') && !e.target.closest('.more')) closeMenu(); });
+$('#contacts').addEventListener('scroll', closeMenu);
+addEventListener('resize', closeMenu);
+
+async function togglePin(id) {
+  const was = pinned.has(id);
+  was ? pinned.delete(id) : pinned.add(id);
+  renderContacts();
+  const { error } = was
+    ? await sb.from('pinned_chats').delete().eq('user_id', me.id).eq('peer_id', id)
+    : await sb.from('pinned_chats').insert({ user_id: me.id, peer_id: id });
+  if (error && error.code !== '23505') {
+    was ? pinned.add(id) : pinned.delete(id);
+    renderContacts();
+    toast('No se pudo guardar. Falta ejecutar el SQL de chats en Supabase.');
+  }
+}
+
+async function toggleBlock(id) {
+  const was = blocked.has(id);
+  was ? blocked.delete(id) : blocked.add(id);
+  renderContacts();
+  syncBlocked();
+  const { error } = was
+    ? await sb.from('blocks').delete().eq('blocker_id', me.id).eq('blocked_id', id)
+    : await sb.from('blocks').insert({ blocker_id: me.id, blocked_id: id });
+  if (error && error.code !== '23505') {
+    was ? blocked.add(id) : blocked.delete(id);
+    renderContacts();
+    syncBlocked();
+    toast('No se pudo guardar. Falta ejecutar el SQL de chats en Supabase.');
+    return;
+  }
+  toast(was ? 'Usuario desbloqueado' : 'Usuario bloqueado');
+}
+function syncBlocked() {
+  const b = !!active && blocked.has(active);
+  $('#composer').hidden = b;
+  $('#blocked-bar').hidden = !b;
+  if (b) clearStaged();
+}
+$('#btn-unblock').addEventListener('click', () => { if (active) toggleBlock(active); });
+
+/* Denunciar: se eligen los mensajes que llegan al admin */
+const reportEl = $('#report');
+let reportFor = null, rpSel = new Set();
+function closeReport() {
+  reportEl.classList.remove('open');
+  reportEl.setAttribute('aria-hidden', 'true');
+  reportFor = null;
+}
+function updateRpCount() {
+  $('#rp-count').textContent = rpSel.size ? rpSel.size + (rpSel.size > 1 ? ' seleccionados' : ' seleccionado') : 'Ningún mensaje seleccionado';
+  $('#rp-send').disabled = !rpSel.size;
+}
+function openReport(id) {
+  reportFor = id;
+  rpSel = new Set();
+  $('#rp-title').innerHTML = 'Denunciar a ' + nameHTML(peers[id]);
+  $('#rp-reason').value = '';
+  $('#rp-error').textContent = '';
+  const list = (cache[id] || []).slice(-40);
+  const box = $('#rp-list');
+  box.innerHTML = list.length
+    ? list.map((m) => `<div class="rp-item" data-id="${esc(m.id)}"><i class="rp-chk"></i><div class="rp-txt"><small>${m.sender_id === me.id ? 'Tú' : esc(peers[id])} · ${fmt(m.created_at)}</small><span>${esc(previewText(m))}</span></div></div>`).join('')
+    : '<p class="muted">No hay mensajes en este chat para denunciar.</p>';
+  updateRpCount();
+  reportEl.classList.add('open');
+  reportEl.setAttribute('aria-hidden', 'false');
+  setTimeout(() => { box.scrollTop = box.scrollHeight; }, 60);
+}
+$('#rp-list').addEventListener('click', (e) => {
+  const it = e.target.closest('.rp-item');
+  if (!it) return;
+  const id = it.dataset.id;
+  if (rpSel.has(id)) rpSel.delete(id);
+  else if (rpSel.size < 30) rpSel.add(id);
+  else { $('#rp-error').textContent = 'Máximo 30 mensajes por denuncia.'; return; }
+  $('#rp-error').textContent = '';
+  it.classList.toggle('sel', rpSel.has(id));
+  updateRpCount();
+});
+$('#rp-close').addEventListener('click', closeReport);
+reportEl.addEventListener('click', (e) => { if (e.target === reportEl) closeReport(); });
+$('#rp-send').addEventListener('click', async () => {
+  if (!reportFor || !rpSel.size) return;
+  const btn = $('#rp-send'), err = $('#rp-error');
+  err.textContent = '';
+  btn.disabled = true;
+  const { error } = await sb.rpc('report_user', { p_reported: reportFor, p_reason: $('#rp-reason').value.trim(), p_message_ids: [...rpSel] });
+  if (error) {
+    err.textContent = /function|schema cache|relation/i.test(error.message) ? 'Falta ejecutar el SQL de denuncias en Supabase.' : 'No se pudo enviar la denuncia. Inténtalo de nuevo.';
+    btn.disabled = false;
+    return;
+  }
+  closeReport();
+  toast('Denuncia enviada. Gracias por avisar.');
+});
+
 /* ---------- 5. Ajustes ---------- */
 const settings = $('#settings');
 function openSettings() {
@@ -1172,7 +1445,7 @@ $('#btn-settings').addEventListener('click', openSettings);
 $('#me-avatar').addEventListener('click', openSettings);
 $('#settings-close').addEventListener('click', closeSettings);
 settings.addEventListener('click', (e) => { if (e.target === settings) closeSettings(); });
-addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSettings(); closeAdmin(); } });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSettings(); closeAdmin(); closeReport(); closeMenu(); } });
 
 /* Tema claro / oscuro */
 const currentTheme = () => document.documentElement.dataset.theme || 'dark';
@@ -1442,6 +1715,7 @@ async function openAdmin() {
   adminEl.classList.add('open');
   adminEl.setAttribute('aria-hidden', 'false');
   await loadAccounts();
+  await loadReports();
 }
 async function loadAccounts() {
   let r = await sb.from('profiles').select('id,username,avatar,created_at').order('created_at');
@@ -1486,10 +1760,11 @@ async function adminCall(fn, args) {
   err.textContent = '';
   const { error } = await sb.rpc(fn, args);
   if (error) {
-    err.textContent = /function|schema cache|relation/i.test(error.message) ? 'Falta ejecutar el SQL de baneos en Supabase.' : error.message;
-    return;
+    err.textContent = /function|schema cache|relation/i.test(error.message) ? 'Falta ejecutar el SQL de baneos o denuncias en Supabase.' : error.message;
+    return false;
   }
   await loadAccounts();
+  return true;
 }
 $('#btn-admin').addEventListener('click', openAdmin);
 $('#admin-close').addEventListener('click', closeAdmin);
@@ -1514,6 +1789,99 @@ $('#adm-list').addEventListener('submit', async (e) => {
     minutes: f.dur.value ? parseInt(f.dur.value, 10) : null,
     reason: f.reason.value,
   });
+});
+
+/* ---------- Denuncias en el panel de administración ---------- */
+let reports = [], repMsgs = {};
+const nameOf = (id) => (accounts.find((a) => a.id === id) || {}).username || 'usuario';
+
+function setAdmTab(t) {
+  $('#adm-tabs').dataset.v = t;
+  document.querySelectorAll('#adm-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
+  $('#adm-accounts').hidden = t !== 'accounts';
+  $('#adm-reports').hidden = t !== 'reports';
+}
+document.querySelectorAll('#adm-tabs button').forEach((b) => b.addEventListener('click', () => setAdmTab(b.dataset.tab)));
+
+async function refreshReportBadge() {
+  if (!me || me.username !== SUPPORT_USER) return;
+  const { count, error } = await sb.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open');
+  if (!error) $('#btn-admin').classList.toggle('alert', (count || 0) > 0);
+}
+
+async function loadReports() {
+  const [r, m] = await Promise.all([
+    sb.from('reports').select('id,reporter_id,reported_id,reason,status,created_at').order('created_at', { ascending: false }),
+    sb.from('report_messages').select('report_id,sender_id,body,file_name,sent_at').order('sent_at'),
+  ]);
+  if (r.error) {
+    reports = [];
+    $('#adm-error').textContent = /relation|schema cache/i.test(r.error.message) ? 'Falta ejecutar el SQL de denuncias en Supabase.' : r.error.message;
+  } else reports = r.data || [];
+  repMsgs = {};
+  (m.data || []).forEach((x) => { (repMsgs[x.report_id] = repMsgs[x.report_id] || []).push(x); });
+  renderReports();
+}
+
+function renderReports() {
+  const open = reports.filter((r) => r.status === 'open').length;
+  const cnt = $('#rep-count');
+  cnt.textContent = open;
+  cnt.hidden = !open;
+  $('#btn-admin').classList.toggle('alert', open > 0);
+  $('#rep-summary').textContent = `${reports.length} denuncias · ${open} abiertas`;
+  const sorted = [...reports].sort((a, b) => ((a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1)) || (Date.parse(b.created_at) - Date.parse(a.created_at)));
+  $('#rep-list').innerHTML = sorted.map((r) => {
+    const user = nameOf(r.reported_id);
+    const acc = accounts.find((a) => a.id === r.reported_id) || {};
+    const isOpen = r.status === 'open';
+    const banned = banInfo(r.reported_id);
+    const chip = isOpen ? '<span class="chip-s bad">Abierta</span>' : `<span class="chip-s ok">${r.status === 'dismissed' ? 'Descartada' : 'Resuelta'}</span>`;
+    const actions = !isOpen ? ''
+      : banned
+        ? '<span class="chip-s bad">Baneado</span><button class="btn-mini" data-act="resolve" type="button">Cerrar</button>'
+        : '<button class="btn-mini danger" data-act="ban" type="button">Banear</button><button class="btn-mini" data-act="dismiss" type="button">Descartar</button>';
+    const msgs = (repMsgs[r.id] || []).map((x) => {
+      const theirs = x.sender_id === r.reported_id;
+      return `<div class="rep-msg${theirs ? ' bad' : ''}"><small>${esc(theirs ? user : nameOf(x.sender_id))} · ${fmt(x.sent_at)}</small>${x.file_name ? '📎 ' : ''}${esc(x.body || x.file_name || '')}</div>`;
+    }).join('');
+    return `<li data-rid="${r.id}" data-uid="${r.reported_id}" class="${isOpen ? '' : 'done'}">
+      <div class="adm-row">${avatar(user, acc.avatar)}
+        <div class="adm-info"><b>${nameHTML(user)}</b><small>Denunciado por ${esc(nameOf(r.reporter_id))} · ${fmt(r.created_at)}</small></div>
+        ${chip}<div class="rep-actions">${actions}</div></div>
+      ${r.reason ? `<p class="rep-reason">Motivo: ${esc(r.reason)}</p>` : ''}
+      <div class="rep-msgs">${msgs || '<span class="muted">Sin mensajes adjuntos.</span>'}</div>
+      <form class="adm-ban" hidden>
+        <select class="field" name="dur">
+          <option value="60">1 hora</option><option value="1440" selected>1 día</option>
+          <option value="10080">7 días</option><option value="43200">30 días</option>
+          <option value="">Permanente</option>
+        </select>
+        <input class="field" name="reason" maxlength="200" placeholder="Motivo del ban" autocomplete="off" value="${esc(r.reason ? 'Denuncia: ' + r.reason : 'Denuncia de otro usuario')}">
+        <button class="btn primary sm" type="submit">Confirmar ban</button>
+      </form></li>`;
+  }).join('') || '<li class="muted">No hay denuncias.</li>';
+}
+
+async function resolveReport(id, status) {
+  if (await adminCall('admin_resolve_report', { p_report: id, p_status: status })) await loadReports();
+}
+$('#rep-list').addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  const li = btn.closest('li');
+  if (btn.dataset.act === 'ban') { const f = li.querySelector('.adm-ban'); f.hidden = !f.hidden; return; }
+  await resolveReport(li.dataset.rid, btn.dataset.act === 'dismiss' ? 'dismissed' : 'resolved');
+});
+$('#rep-list').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target, li = f.closest('li');
+  const ok = await adminCall('admin_ban', {
+    target: li.dataset.uid,
+    minutes: f.dur.value ? parseInt(f.dur.value, 10) : null,
+    reason: f.reason.value,
+  });
+  if (ok) await resolveReport(li.dataset.rid, 'resolved');
 });
 
 /* ---------- 7. Notificaciones push ---------- */
