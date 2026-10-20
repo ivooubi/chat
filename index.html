@@ -351,6 +351,18 @@ body{transition:background .4s,color .4s}
 .rep-msg.bad{border-color:rgba(255,69,58,.4)}
 .rep-msg small{display:block;color:var(--muted);font-size:11px;margin-bottom:2px}
 .rep-actions{display:flex;gap:6px;flex:none}
+
+/* Archivo caducado */
+.att-err{aspect-ratio:auto!important;animation:none!important}
+
+/* Admin: espacio usado */
+.usage{margin-top:8px;padding:12px 14px;border-radius:16px;background:var(--panel2);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.usage-row{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted)}
+.usage-row b{color:var(--text);font-weight:600;white-space:nowrap}
+.bar{height:6px;border-radius:999px;background:var(--line);overflow:hidden;margin-bottom:4px}
+.bar i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .8s var(--ease)}
+.bar i.warn{background:linear-gradient(90deg,#ff9f0a,#ffb340)}
+.bar i.bad{background:linear-gradient(90deg,var(--red),#ff7a59)}
 </style>
 </head>
 <body>
@@ -490,6 +502,15 @@ body{transition:background .4s,color .4s}
       <button class="icon-btn" id="admin-close" title="Cerrar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="sheet-body">
+      <div class="usage" id="usage">
+        <div id="us-body" hidden>
+          <div class="usage-row"><span id="us-files-label">Archivos</span><b id="us-files"></b></div>
+          <div class="bar"><i id="us-files-bar"></i></div>
+          <div class="usage-row"><span>Base de datos (aprox.)</span><b id="us-db"></b></div>
+          <div class="bar"><i id="us-db-bar"></i></div>
+        </div>
+        <p class="muted" id="us-msg">Calculando espacio…</p>
+      </div>
       <div class="seg" id="adm-tabs" data-v="accounts">
         <i class="seg-pill"></i>
         <button type="button" class="on" data-tab="accounts">Cuentas</button>
@@ -977,6 +998,13 @@ function setRead(el, at) {
   el.classList.add('read');
   el.title = 'Visto ' + new Date(at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 }
+const FILE_DAYS = 3; // los archivos se borran a los 3 días (función cleanup-files en Supabase)
+function expiryText(m) {
+  if (!m.file_path) return '';
+  const left = FILE_DAYS * 864e5 - (Date.now() - new Date(m.created_at).getTime());
+  if (left <= 0) return ' · caducado';
+  return ' · caduca en ' + (left > 864e5 ? Math.ceil(left / 864e5) + ' d' : Math.max(1, Math.ceil(left / 36e5)) + ' h');
+}
 function bubbleHTML(m) {
   const t = new Date(m.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
   const out = m.sender_id === me.id;
@@ -985,7 +1013,7 @@ function bubbleHTML(m) {
   const body = m.file_path
     ? attHTML(m) + (m.text && m.text !== m.file_name ? `<div class="cap">${esc(m.text)}</div>` : '')
     : esc(m.text);
-  return `<div class="bubble ${out ? 'out' : 'in'}${m.file_path ? ' media' : ''}" data-id="${m.id}">${body}<small>${t}${ticks}</small></div>`;
+  return `<div class="bubble ${out ? 'out' : 'in'}${m.file_path ? ' media' : ''}" data-id="${m.id}">${body}<small>${t}${expiryText(m)}${ticks}</small></div>`;
 }
 
 /* Marca como vistos los mensajes recibidos del chat abierto */
@@ -1089,7 +1117,10 @@ async function hydrate(root) {
         n.classList.add('ready');
         n.appendChild(el);
       }
-    } catch (_) { n.classList.add('att-err'); n.textContent = 'No se pudo cargar el archivo'; }
+    } catch (ex) {
+      n.classList.add('att-err');
+      n.textContent = /not found|404/i.test((ex && (ex.message || ex.error)) || '') ? 'Archivo caducado (se borran a los 3 días)' : 'No se pudo cargar el archivo';
+    }
   }));
 }
 function asCard(n) { // si el navegador no puede mostrarlo, se ofrece como descarga
@@ -1714,6 +1745,7 @@ async function openAdmin() {
   $('#adm-error').textContent = '';
   adminEl.classList.add('open');
   adminEl.setAttribute('aria-hidden', 'false');
+  loadUsage();
   await loadAccounts();
   await loadReports();
 }
@@ -1790,6 +1822,30 @@ $('#adm-list').addEventListener('submit', async (e) => {
     reason: f.reason.value,
   });
 });
+
+/* ---------- Espacio usado (plan gratuito: 1 GB de archivos, 500 MB de base de datos) ---------- */
+const LIMITS = { files: 1024 ** 3, db: 500 * 1024 ** 2 };
+const fmtBytes = (n) => (n < 1048576 ? Math.round(n / 1024) + ' KB' : n < 1073741824 ? (n / 1048576).toFixed(1) + ' MB' : (n / 1073741824).toFixed(2) + ' GB');
+async function loadUsage() {
+  const body = $('#us-body'), msg = $('#us-msg');
+  const { data, error } = await sb.rpc('admin_storage_usage');
+  if (error || !data) {
+    body.hidden = true; msg.hidden = false;
+    msg.textContent = error && /function|schema cache/i.test(error.message) ? 'Falta ejecutar el SQL de espacio en Supabase.' : 'No se pudo calcular el espacio.';
+    return;
+  }
+  const set = (id, used, limit) => {
+    const p = Math.min(100, (used / limit) * 100);
+    $('#us-' + id).textContent = `${fmtBytes(used)} de ${fmtBytes(limit)}`;
+    const bar = $('#us-' + id + '-bar');
+    bar.style.width = Math.max(p, used ? 2 : 0) + '%';
+    bar.className = p >= 90 ? 'bad' : p >= 70 ? 'warn' : '';
+  };
+  $('#us-files-label').textContent = `Archivos (${Number(data.files_count) || 0})`;
+  set('files', Number(data.files_bytes) || 0, LIMITS.files);
+  set('db', Number(data.db_bytes) || 0, LIMITS.db);
+  msg.hidden = true; body.hidden = false;
+}
 
 /* ---------- Denuncias en el panel de administración ---------- */
 let reports = [], repMsgs = {};
